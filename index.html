@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Business Services | 社区商业服务</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+    <style>
+        :root {
+            --primary: #2c5aa0;
+            --secondary: #ff6b35;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --gray: #6c757d;
+            --warning: #ffc107;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            transition: all 0.3s ease;
+            font-family: 'Poppins', 'Noto Sans SC', sans-serif;
+            line-height: 1.6;
+        }
+        
+        /* 移动优先布局 */
+        .mobile-first {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        /* Header & Navigation */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header-container {
+            display: flex;
+            flex-direction: column;
+            padding: 15px 0;
+        }
+        
+        .logo-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .logo i {
+            color: var(--secondary);
+        }
+        
+        .mobile-menu-btn {
+            display: block;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        
+        .desktop-menu-btn {
+            display: none;
+        }
+        
+        nav {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        nav.active {
+            display: flex;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            padding: 10px 0;
+            transition: color 0.3s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        nav a:hover {
+            color: var(--primary);
+        }
+        
+        .lang-switch {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        
+        .lang-switch:hover {
+            background-color: #1e3d6f;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #2c5aa0 0%, #1e3d6f 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+        
+        .price-tag {
+            display: inline-block;
+            background-color: var(--secondary);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .guarantee {
+            display: inline-flex;
+            align-items: center;
+            background-color: white;
+            color: var(--primary);
+            padding: 10px 20px;
+            border-radius: 50px;
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .guarantee i {
+            color: var(--success);
+            margin-right: 8px;
+        }
+        
+        /* Notice Section */
+        .notice {
+            background-color: #fff9e6;
+            border-left: 5px solid var(--warning);
+            padding: 25px;
+            margin: 40px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .notice h3 {
+            color: var(--dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notice h3 i {
+            color: var(--warning);
+        }
+        
+        /* Services Section */
+        .services {
+            padding: 60px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2rem;
+            color: var(--primary);
+        }
+        
+        .service-detail {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+            padding: 25px;
+        }
+        
+        .service-detail h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .service-detail h3 i {
+            color: var(--secondary);
+        }
+        
+        .service-price-tag {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-weight: 700;
+            margin: 10px 0;
+            font-size: 1.1rem;
+        }
+        
+        .feature-list {
+            list-style-type: none;
+            margin: 20px 0;
+        }
+        
+        .feature-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li i {
+            color: var(--success);
+            margin-right: 12px;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .btn:hover {
+            background-color: #1e3d6f;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e05a2a;
+        }
+        
+        /* Hourly Rate Section */
+        .hourly-rate {
+            background-color: white;
+            padding: 40px 0;
+            text-align: center;
+            border-radius: 10px;
+            margin: 40px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .hourly-rate h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .rate-box {
+            display: inline-block;
+            background-color: var(--light);
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .rate-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+        
+        .services-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 25px 0;
+        }
+        
+        .service-tag {
+            background-color: var(--light);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        /* Demo Section */
+        .demo {
+            padding: 60px 0;
+            background-color: #f0f4f8;
+        }
+        
+        .demo-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-tab {
+            padding: 12px 20px;
+            background-color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            text-align: center;
+        }
+        
+        .demo-tab.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .demo-content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            display: none;
+        }
+        
+        .demo-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .demo-header {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .demo-preview {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+        
+        .website-example {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            min-width: 300px;
+        }
+        
+        .website-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .website-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .main-content, .sidebar {
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        /* Business Lead Section */
+        .business-lead {
+            padding: 60px 0;
+            background-color: white;
+        }
+        
+        .lead-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .lead-form {
+            flex: 1;
+        }
+        
+        .lead-form h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+        }
+        
+        .contact-methods {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .contact-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .contact-card h4 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .contact-card i {
+            color: var(--secondary);
+        }
+        
+        .qr-code {
+            max-width: 200px;
+            margin: 15px auto;
+            padding: 10px;
+            background-color: white;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .qr-code img {
+            width: 150px;
+            height: 150px;
+            background-color: #f0f0f0;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        
+        /* CTA Section */
+        .cta {
+            background: linear-gradient(135deg, var(--secondary) 0%, #e05a2a 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+        }
+        
+        .cta h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+            align-items: center;
+        }
+        
+        .cta-buttons .btn {
+            width: auto;
+            min-width: 200px;
+            margin: 0;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 40px 0 20px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 15px;
+            color: var(--secondary);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+        
+        /* Tablet and Desktop Styles */
+        @media (min-width: 768px) {
+            .header-container {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .logo-section {
+                width: auto;
+            }
+            
+            .mobile-menu-btn {
+                display: none;
+            }
+            
+            .desktop-menu-btn {
+                display: block;
+            }
+            
+            nav {
+                display: flex;
+                flex-direction: row;
+                width: auto;
+                margin-top: 0;
+                padding-top: 0;
+                border-top: none;
+                gap: 25px;
+            }
+            
+            nav a {
+                padding: 0;
+                border-bottom: none;
+            }
+            
+            .lang-switch {
+                margin-top: 0;
+                margin-left: 15px;
+            }
+            
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            
+            .demo-tabs {
+                flex-direction: row;
+                justify-content: center;
+            }
+            
+            .demo-tab {
+                min-width: 180px;
+            }
+            
+            .website-content {
+                grid-template-columns: 2fr 1fr;
+            }
+            
+            .lead-container {
+                flex-direction: row;
+            }
+            
+            .contact-methods {
+                flex-direction: row;
+            }
+            
+            .footer-content {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+            
+            .cta-buttons {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .hero {
+                padding: 80px 0;
+            }
+            
+            .hero h1 {
+                font-size: 3.2rem;
+            }
+            
+            .services, .demo, .business-lead {
+                padding: 80px 0;
+            }
+            
+            .section-title {
+                font-size: 2.5rem;
+            }
+            
+            .btn {
+                width: auto;
+            }
+            
+            .services-list {
+                gap: 15px;
+            }
+            
+            .service-tag {
+                font-size: 1rem;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .no-print {
+                display: none;
+            }
+            
+            body {
+                font-size: 12pt;
+                line-height: 1.5;
+            }
+            
+            .hero, .cta {
+                background: white !important;
+                color: black !important;
+            }
+            
+            .price-tag, .guarantee {
+                border: 1px solid black;
+            }
+        }
+    </style>
+</head>
+<body class="mobile-first">
+    <!-- Header with Navigation -->
+    <header>
+        <div class="container header-container">
+            <div class="logo-section">
+                <div class="logo">
+                    <i class="fas fa-hands-helping"></i>
+                    <span class="english">Community Business Services</span>
+                    <span class="chinese" style="display: none;">社区商业服务</span>
+                </div>
+                 <!-- 移动端语言切换按钮（显示在logo旁边） -->
+                <div class="mobile-lang-switch" id="mobileLangSwitch">
+                    <i class="fas fa-globe"></i>
+                    <span class="english">网站制作</span>
+                    <span class="chinese" style="display: none;">Website Development</span>
+                </div>
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <nav id="mainNav">
+                <a href="#services" class="english">Services</a>
+                <a href="#services" class="chinese" style="display: none;">服务项目</a>
+                <a href="#demo" class="english">Examples</a>
+                <a href="#demo" class="chinese" style="display: none;">案例展示</a>
+                <a href="#contact" class="english">Contact</a>
+                <a href="#contact" class="chinese" style="display: none;">联系我们</a>
+                <!-- 桌面端语言切换按钮（在导航菜单中） -->
+                <div class="desktop-lang-switch" id="desktopLangSwitch">
+                    <i class="fas fa-globe"></i>
+                    <span class="english">网站制作</span>
+                    <span class="chinese" style="display: none;">Website Development</span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="english">Your Business Deserves a Better Website</h1>
+            <h1 class="chinese" style="display: none;">您的生意值得一个更好的网站</h1>
+            <p class="english">Starting at only</p>
+            <p class="chinese" style="display: none;">起步价仅需</p>
+            <div class="price-tag">$500 CAD</div>
+            <p class="english">Guaranteed lowest price on the internet for all website development services</p>
+            <p class="chinese" style="display: none;">保证全网络最低价的网站开发服务</p>
+            <div class="guarantee">
+                <i class="fas fa-shield-alt"></i>
+                <span class="english">Price Match Guarantee</span>
+                <span class="chinese" style="display: none;">价格匹配保证</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notice Section -->
+    <div class="container">
+        <div class="notice">
+            <h3><i class="fas fa-info-circle"></i> <span class="english">Our Community Mission</span><span class="chinese" style="display: none;">我们的社区使命</span></h3>
+            <p class="english">
+                Community Business Services is designed to support small business owners with affordable online solutions. We do not compete with premium web development agencies that offer highly customized, complex solutions. Our mission is to lower the barrier for small businesses to establish an online presence and experiment with digital sales at minimal cost.
+            </p>
+            <p class="english">
+                If you have a substantial budget and require highly specialized, complex website features, we encourage you to explore other established web development companies. Our services are specifically tailored for business owners who need simple, effective, and affordable solutions to get started online.
+            </p>
+            
+            <p class="chinese" style="display: none;">
+                社区商业服务旨在为小企业主提供经济实惠的在线解决方案。我们与提供高度定制化、复杂解决方案的高级网站开发公司没有竞争关系。我们的使命是降低小企业建立在线形象的门槛，让他们以最低成本尝试数字销售。
+            </p>
+            <p class="chinese" style="display: none;">
+                如果您有充足的预算，需要高度专业化、复杂的网站功能，我们建议您探索其他成熟的网站开发公司。我们的服务专门为需要简单、有效且经济实惠的解决方案来开始在线业务的企业主量身定制。
+            </p>
+        </div>
+    </div>
+
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="container">
+            <h2 class="section-title english">Our Services Explained</h2>
+            <h2 class="section-title chinese" style="display: none;">服务详细说明</h2>
+            
+            <!-- Simple Website Service -->
+            <div class="service-detail">
+                <h3><i class="fas fa-desktop"></i> <span class="english">Simple Website Development</span><span class="chinese" style="display: none;">简单网站开发</span></h3>
+                <div class="service-price-tag english">Starting at $500</div>
+                <div class="service-price-tag chinese" style="display: none;">起步价$500</div>
+                
+                <p class="english"><strong>Purpose:</strong> Display your business, products, and services with a simple client inquiry form.</p>
+                <p class="chinese" style="display: none;"><strong>目的：</strong>展示您的业务、产品和服务，包含简单的客户咨询表单。</p>
+                
+                <p class="english"><strong>What's included:</strong></p>
+                <p class="chinese" style="display: none;"><strong>包含内容：</strong></p>
+                
+                <ul class="feature-list">
+                    <li><i class="fas fa-check"></i><span class="english">3-5 page website with your prepared content</span><span class="chinese" style="display: none;">3-5个页面，使用您准备好的内容</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">Simple, professional UI design tailored to your industry</span><span class="chinese" style="display: none;">简单专业的UI设计，适合您的行业</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">Attractive animations to make your site lively</span><span class="chinese" style="display: none;">吸引人的动画效果，让网站更生动</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">Client inquiry intake form</span><span class="chinese" style="display: none;">客户咨询收集表单</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">Mobile-responsive design</span><span class="chinese" style="display: none;">移动响应式设计</span></li>
+                </ul>
+                
+                <p class="english"><strong>Perfect for:</strong> If your business operates primarily through local referrals but struggles to reach new customers beyond your immediate network, this website solution bridges that gap. It's designed for entrepreneurs who value professionalism but need a straightforward, cost-effective approach to online visibility.</p>
+                <p class="chinese" style="display: none;"><strong>完美适合：</strong>专为意识到需要专业线上展示但追求简洁与实惠的企业主设计。如果您的业务主要依赖本地推荐，但难以触及直接网络之外的新客户，此网站方案正能弥合这一差距。专为重视专业形象但需要直接、经济、高效的线上企业形象推广的创业者而设计。此解决方案为您的业务增长提供理想起点。</p>
+                
+                <button class="btn english" data-service="simple">Get Simple Website</button>
+                <button class="btn chinese" style="display: none;" data-service="simple">获取简单网站</button>
+            </div>
+            
+            <!-- Website Upgrade with Backstage -->
+            <div class="service-detail">
+                <h3><i class="fas fa-cogs"></i> <span class="english">Website Upgrade with Backstage</span><span class="chinese" style="display: none;">带后台管理的网站升级</span></h3>
+                <div class="service-price-tag english">$800 ($500 + $300 upgrade)</div>
+                <div class="service-price-tag chinese" style="display: none;">$800 ($500 + $300 升级费)</div>
+                
+                <p class="english"><strong>Purpose:</strong> Give you full control to update your website without technical skills.</p>
+                <p class="chinese" style="display: none;"><strong>目的：</strong>让您无需技术技能即可完全控制更新网站。</p>
+                
+                <p class="english"><strong>What's included:</strong></p>
+                <p class="chinese" style="display: none;"><strong>包含内容：</strong></p>
+                
+                <ul class="feature-list">
+                    <li><i class="fas fa-check"></i><span class="english">Everything in Simple Website</span><span class="chinese" style="display: none;">包含简单网站的所有功能</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">Secure admin login with password protection</span><span class="chinese" style="display: none;">安全的管理员登录，密码保护</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">Easy content management - update text, images, pages</span><span class="chinese" style="display: none;">简单的内容管理 - 更新文本、图片、页面</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">Add new content modules as needed</span><span class="chinese" style="display: none;">根据需要添加新的内容模块</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">Pre-designed UI themes for holidays/seasons</span><span class="chinese" style="display: none;">节日/季节的预设计UI主题</span></li>
+                </ul>
+                
+                <p class="english"><strong>Perfect for:</strong> Created for forward-thinking business owners who value independence in managing their online presence. If you've experienced the frustration of waiting for technical support to make simple updates, this solution gives you the tools and training to take full control of your digital identity.</p>
+                <p class="chinese" style="display: none;"><strong>完美适合：</strong>为重视在线形象管理独立性的前瞻性企业主打造。如果您已投资基础网站，但在尝试在线上反映自己企业近来的业务发展时感到受到限制，如果您曾因等待技术支持进行简单更新而感到困扰，此方案将为您提供完全掌控升级更新企业网站的能力，解锁您适应和提升在线形象的能力，无需重新开始一个新的网页。所需的工具与培训我们将为您提供。</p>
+                
+                <p class="english"><em>Additional features like payment gateways available at extra cost.</em></p>
+                <p class="chinese" style="display: none;"><em>支付网关等附加功能需额外收费。</em></p>
+                
+                <button class="btn btn-secondary english" data-service="upgrade">Upgrade My Website</button>
+                <button class="btn btn-secondary chinese" style="display: none;" data-service="upgrade">升级我的网站</button>
+            </div>
+            
+            <!-- E-commerce Solution -->
+            <div class="service-detail">
+                <h3><i class="fas fa-shopping-cart"></i> <span class="english">Small E-commerce Solution</span><span class="chinese" style="display: none;">小型电商解决方案</span></h3>
+                <div class="service-price-tag english">Starting at $2,000</div>
+                <div class="service-price-tag chinese" style="display: none;">起步价$2,000</div>
+                
+                <p class="english"><strong>Purpose:</strong> Complete online sales system for local businesses.</p>
+                <p class="chinese" style="display: none;"><strong>目的：</strong>为本地企业提供完整的在线销售系统。</p>
+                
+                <p class="english"><strong>What's included:</strong></p>
+                <p class="chinese" style="display: none;"><strong>包含内容：</strong></p>
+                
+                <ul class="feature-list">
+                    <li><i class="fas fa-check"></i><span class="english">Up to 100 products or 5 categories</span><span class="chinese" style="display: none;">最多100种产品或5个类别</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">Single admin login at a time</span><span class="chinese" style="display: none;">单次一个管理员登录</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">Payment gateway integration or offline payment option</span><span class="chinese" style="display: none;">支付网关集成或线下支付选项</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">Unique transaction numbers for offline payment & in-store pickup</span><span class="chinese" style="display: none;">线下支付和店内取货的唯一交易号</span></li>
+                    <li><i class="fas fa-check"></i><span class="english">SEO optimized for local customers</span><span class="chinese" style="display: none;">针对本地客户的SEO优化</span></li>
+                </ul>
+                
+                <p class="english"><strong>Automation Extension:</strong> Add inventory management, financial tracking (accounts payable/receivable), and business reports for <strong>+$2,000</strong>. All data is confidential and stored based on your preferences.</p>
+                <p class="chinese" style="display: none;"><strong>自动化扩展：</strong>添加库存管理、财务跟踪（应付/应收账款）和业务报告，仅需<strong>+$2,000</strong>。所有数据都是保密的，并根据您的偏好存储。</p>
+                
+                <p class="english"><em>SEO services and courses available separately. Anything beyond these scopes is considered custom development.</em></p>
+                <p class="chinese" style="display: none;"><em>SEO服务和课程单独提供。超出这些范围的任何内容均视为定制开发。</em></p>
+                
+                <button class="btn english" data-service="ecommerce">Start E-commerce Store</button>
+                <button class="btn chinese" style="display: none;" data-service="ecommerce">开始电商店铺</button>
+            </div>
+            
+            <!-- Hourly Rate Section -->
+            <div class="hourly-rate">
+                <h2 class="english">Custom Development Services</h2>
+                <h2 class="chinese" style="display: none;">定制开发服务</h2>
+                <p class="english">Need something special? We build custom solutions for unique business needs</p>
+                <p class="chinese" style="display: none;">需要特殊功能？我们为独特的业务需求构建定制解决方案</p>
+                
+                <div class="rate-box">
+                    <div class="rate-amount">$50</div>
+                    <div class="english">per hour</div>
+                    <div class="chinese" style="display: none;">每小时</div>
+                </div>
+                
+                <p class="english"><strong>Examples:</strong> We invite collaboration on specialized projects including financial modeling, security enhancement, business process automation, and bespoke solutions for distinctive needs. Partner with us to actualize your innovative concepts into operational reality.</p>
+                <p class="chinese" style="display: none;"><strong>示例：</strong>从精密金融架构到高级安全方案，从智能商业自动化到个性化定制需求，我们专注于将专业要求转化为切实可行的系统实现。我们将您的构想转化为可落地的完整解决方案。</p>
+                
+                <div class="services-list">
+                    <div class="service-tag english">Custom Website Development</div>
+                    <div class="service-tag chinese" style="display: none;">定制网站开发</div>
+                    <div class="service-tag english">UI/UX Design Services</div>
+                    <div class="service-tag chinese" style="display: none;">UI/UX设计服务</div>
+                    <div class="service-tag english">Multiple Media Development</div>
+                    <div class="service-tag chinese" style="display: none;">多媒体开发</div>
+                    <div class="service-tag english">Software Programming</div>
+                    <div class="service-tag chinese" style="display: none;">软件编程</div>
+                </div>
+                
+                <button class="btn english" id="customQuoteBtn">Request Custom Quote</button>
+                <button class="btn chinese" style="display: none;" id="customQuoteBtn">获取定制报价</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section class="demo" id="demo">
+        <div class="container">
+            <h2 class="section-title english">Website Examples</h2>
+            <h2 class="section-title chinese" style="display: none;">网站案例展示</h2>
+            
+            <div class="demo-tabs">
+                <div class="demo-tab active" data-tab="simple">Simple Website</div>
+                <div class="demo-tab" data-tab="backstage">Website with Backstage</div>
+                <div class="demo-tab" data-tab="ecommerce">Small E-commerce</div>
+            </div>
+            
+            <!-- Simple Website Demo -->
+            <div class="demo-content active" id="simple-demo">
+                <div class="demo-header">
+                    <h3 class="english">Simple Business Website</h3>
+                    <h3 class="chinese" style="display: none;">简单商业网站</h3>
+                    <p class="english">Consider this website a benchmark for professional business web design. The example showcases essential features that create an impactful and functional online presence.</p>
+                    <p class="chinese" style="display: nonoe;">欢迎参考本网站作为高效商业设计的典范。以下演示展现了构成专业线上形象的基础功能与核心要素。</p>
+                    <div class="service-price-tag">Starting at $500</div>
+                </div>
+                <div class="demo-preview">
+                    <div class="website-example">
+                        <div class="website-header">
+                            <h3 class="english">Local Coffee Shop</h3>
+                            <h3 class="chinese" style="display: none;">本地咖啡店</h3>
+                        </div>
+                        <div class="website-content">
+                            <div class="main-content">
+                                <h4 class="english">Welcome to Our Coffee Shop</h4>
+                                <h4 class="chinese" style="display: none;">欢迎来到我们的咖啡店</h4>
+                                <p class="english">We serve the best coffee in town with fresh pastries daily.</p>
+                                <p class="chinese" style="display: none;">我们提供镇上最好的咖啡和每日新鲜糕点。</p>
+                                <div style="background-color: #e9f5ff; padding: 10px; border-radius: 5px; margin: 15px 0;">
+                                    <p class="english"><strong>Special Offer:</strong> 10% off your first order!</p>
+                                    <p class="chinese" style="display: none;"><strong>特别优惠：</strong>首单9折！</p>
+                                </div>
+                            </div>
+                            <div class="sidebar">
+                                <h5 class="english">Contact Form</h5>
+                                <h5 class="chinese" style="display: none;">联系表单</h5>
+                                <div style="background-color: white; padding: 10px; border-radius: 5px;">
+                                    <input type="text" placeholder="Your Name" style="width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                                    <button style="width: 100%; padding: 8px; background-color: var(--primary); color: white; border: none; border-radius: 3px;">Send Inquiry</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Backstage Demo -->
+            <div class="demo-content" id="backstage-demo">
+                <div class="demo-header">
+                    <h3 class="english">Website with Backstage Management</h3>
+                    <h3 class="chinese" style="display: none;">带后台管理的网站</h3>
+                    <p class="english">Accessible administrative login directly from your homepage connects to a fully customizable management interface, complemented by our expert training to ensure rapid team proficiency.</p>
+                    <p class="chinese" style="display: none;">主页直达管理后台，所有内容模块均可自由编辑。配备专业培训，让您的团队轻松上手，快速实现网站自主运营。</p>
+
+                    <div class="service-price-tag">$800</div>
+                </div>
+                <div class="demo-preview">
+                    <div class="website-example">
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4 class="english">Admin Login</h4>
+                                <h4 class="chinese" style="display: none;">管理员登录</h4>
+                                <button style="padding: 5px 15px; background-color: var(--primary); color: white; border: none; border-radius: 3px;">Sign In</button>
+                            </div>
+                            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px;">
+                                <p class="english"><strong>Admin Panel Features:</strong></p>
+                                <p class="chinese" style="display: none;"><strong>管理面板功能：</strong></p>
+                                <ul style="margin-left: 20px;">
+                                    <li class="english">Update homepage content</li>
+                                    <li class="chinese" style="display: none;">更新首页内容</li>
+                                    <li class="english">Add/remove products</li>
+                                    <li class="chinese" style="display: none;">添加/删除产品</li>
+                                    <li class="english">Change website theme</li>
+                                    <li class="chinese" style="display: none;">更改网站主题</li>
+                                    <li class="english">Manage contact inquiries</li>
+                                    <li class="chinese" style="display: none;">管理联系咨询</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- E-commerce Demo -->
+            <div class="demo-content" id="ecommerce-demo">
+                <div class="demo-header">
+                    <h3 class="english">Small E-commerce Store</h3>
+                    <h3 class="chinese" style="display: none;">小型电商商店</h3>
+                    <p class="english">Consider established e-commerce sites as a reference for layout and functionality planning. We are committed to actualizing your vision with precision. While the example illustrates basic e-commerce capabilities, your store can be tailored to include specialized features that support your business growth.</p>
+                    <p class="chinese" style="display: none;">我们邀请您参考主流电商平台的页面布局与功能设计作为规划蓝本。我们的团队致力于将您的具体需求转化为功能完备的在线商店。以下示例展示了基础的电商功能，我们将根据您的独特业务目标进行扩展和定制。</p>
+                    <div class="service-price-tag">$2,000+</div>
+                </div>
+                <div class="demo-preview">
+                    <div class="website-example">
+                        <div class="website-header">
+                            <h3 class="english">Local Handmade Crafts Store</h3>
+                            <h3 class="chinese" style="display: none;">本地手工艺品商店</h3>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0;">
+                            <div style="background-color: white; border: 1px solid #ddd; border-radius: 5px; padding: 10px; text-align: center;">
+                                <h5 class="english">Ceramic Mug</h5>
+                                <h5 class="chinese" style="display: none;">陶瓷杯</h5>
+                                <p>$24.99</p>
+                                <button style="padding: 5px 10px; background-color: var(--primary); color: white; border: none; border-radius: 3px; font-size: 0.9rem;">Add to Cart</button>
+                            </div>
+                            <div style="background-color: white; border: 1px solid #ddd; border-radius: 5px; padding: 10px; text-align: center;">
+                                <h5 class="english">Wooden Board</h5>
+                                <h5 class="chinese" style="display: none;">木质砧板</h5>
+                                <p>$34.99</p>
+                                <button style="padding: 5px 10px; background-color: var(--primary); color: white; border: none; border-radius: 3px; font-size: 0.9rem;">Add to Cart</button>
+                            </div>
+                        </div>
+                        <div style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                            <p class="english"><strong>Payment Options:</strong> Credit Card, PayPal, or Offline Payment</p>
+                            <p class="chinese" style="display: none;"><strong>支付选项：</strong>信用卡、PayPal或线下支付</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Business Lead Section -->
+    <section class="business-lead" id="contact">
+        <div class="container">
+            <h2 class="section-title english">Contact Us for Your Project</h2>
+            <h2 class="section-title chinese" style="display: none;">联系我们获取项目报价</h2>
+            
+            <div class="lead-container">
+                <div class="lead-form">
+                    <h3 class="english">Send Your Inquiry</h3>
+                    <h3 class="chinese" style="display: none;">发送您的咨询</h3>
+                    
+                    <form id="inquiryForm">
+                        <div class="form-group">
+                            <label for="name" class="english">Your Name</label>
+                            <label for="name" class="chinese" style="display: none;">您的姓名</label>
+                            <input type="text" id="name" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email" class="english">Email Address</label>
+                            <label for="email" class="chinese" style="display: none;">电子邮件地址</label>
+                            <input type="email" id="email" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="service" class="english">Service Interested In</label>
+                            <label for="service" class="chinese" style="display: none;">感兴趣的服务</label>
+                            <select id="service" class="form-control" required>
+                                <option value="" class="english">Select a service</option>
+                                <option value="" class="chinese" style="display: none;">选择服务</option>
+                                <option value="simple" class="english">Simple Website ($500+)</option>
+                                <option value="simple" class="chinese" style="display: none;">简单网站 ($500起)</option>
+                                <option value="upgrade" class="english">Website Upgrade ($800)</option>
+                                <option value="upgrade" class="chinese" style="display: none;">网站升级 ($800)</option>
+                                <option value="ecommerce" class="english">E-commerce Store ($2,000+)</option>
+                                <option value="ecommerce" class="chinese" style="display: none;">电商商店 ($2,000起)</option>
+                                <option value="custom" class="english">Custom Development ($50/hour)</option>
+                                <option value="custom" class="chinese" style="display: none;">定制开发 ($50/小时)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message" class="english">Project Details</label>
+                            <label for="message" class="chinese" style="display: none;">项目详情</label>
+                            <textarea id="message" class="form-control" rows="5" placeholder="Tell us about your project..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn">
+                            <span class="english">Send Inquiry</span>
+                            <span class="chinese" style="display: none;">发送咨询</span>
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="contact-methods">
+                    <div class="contact-card">
+                        <h4><i class="fas fa-envelope"></i> <span class="english">Email Us</span><span class="chinese" style="display: none;">发送邮件</span></h4>
+                        <p class="english">Get detailed quotes and responses</p>
+                        <p class="chinese" style="display: none;">获取详细报价和回复</p>
+                        <p><strong>info@communitybusiness.ca</strong></p>
+                        <p class="english">We respond within 24 hours</p>
+                        <p class="chinese" style="display: none;">我们会在24小时内回复</p>
+                    </div>
+                    
+                    <div class="contact-card">
+                        <h4><i class="fab fa-weixin"></i> <span class="english">WeChat Connection</span><span class="chinese" style="display: none;">微信联系</span></h4>
+                        <p class="english">Scan QR code to connect on WeChat</p>
+                        <p class="chinese" style="display: none;">扫描二维码在微信上联系我们</p>
+                        <div class="qr-code">
+                    <div style="width: 150px; height: 150px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; border-radius: 5px;">
+                        <!-- 微信二维码图片 - 替换src为您实际的二维码图片路径 -->
+                        <img src="./wechat qr code.jpg" alt="微信二维码" style="width: 100%; height: 100%; object-fit: contain; border-radius: 5px;">
+                        <!-- 如果图片加载失败，显示备用图标 -->
+                    <div style="display: none; text-align: center; color: #666; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center;" id="wechat-fallback">
+                        <i class="fab fa-weixin" style="font-size: 3rem; color: #07C160; margin-bottom: 10px;"></i>
+                        <div class="english">
+                            <p style="font-size: 0.8rem; margin-bottom: 5px;">Scan QR or add:</p>
+                            <p style="font-size: 0.9rem; font-weight: bold; color: #333;">fangdaihaokuai</p>
+                        </div>
+                        <div class="chinese" style="display: none;">
+                            <p style="font-size: 0.8rem; margin-bottom: 5px;">扫描二维码或添加：</p>
+                            <p style="font-size: 0.9rem; font-weight: bold; color: #333;">fangdaihaokuai</p>
+                        </div>
+                    </div>
+                    </div>
+                    <p class="english" style="font-size: 0.9rem; color: #666;">Scan to connect with us</p>
+                    <p class="chinese" style="display: none; font-size: 0.9rem; color: #666;">扫描二维码联系我们</p>
+                </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2 class="english">Ready to Start Your Online Journey?</h2>
+            <h2 class="chinese" style="display: none;">准备好开始您的在线之旅了吗？</h2>
+            <p class="english">Affordable solutions for small businesses to thrive online</p>
+            <p class="chinese" style="display: none;">为小企业提供经济实惠的在线解决方案</p>
+            
+            <div class="cta-buttons">
+                <a href="mailto:info@communitybusiness.ca" class="btn" style="background-color: var(--primary); color: white;">
+                        <i class="fas fa-envelope"></i>
+                        <span class="english">Email Us</span>
+                        <span class="chinese" style="display: none;">邮件联系</span>
+                </a>
+                <button class="btn" id="inquiryBtn" style="background-color: var(--primary);">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="english">Get Free Consultation</span>
+                    <span class="chinese" style="display: none;">获取免费咨询</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 class="english">Community Business Services</h3>
+                    <h3 class="chinese" style="display: none;">社区商业服务</h3>
+                    <p class="english">Affordable web solutions for local businesses since 2020.</p>
+                    <p class="chinese" style="display: none;">自2020年以来为本地企业提供经济实惠的网站解决方案。</p>
+                </div>
+                <div class="footer-section">
+                    <h3 class="english">Quick Links</h3>
+                    <h3 class="chinese" style="display: none;">快速链接</h3>
+                    <p><a href="#services" style="color: white;">Services</a></p>
+                    <p><a href="#demo" style="color: white;">Examples</a></p>
+                    <p><a href="#contact" style="color: white;">Contact</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3 class="english">Contact Info</h3>
+                    <h3 class="chinese" style="display: none;">联系信息</h3>
+                    <p><i class="fas fa-envelope"></i> info@communitybusiness.ca</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p class="english">&copy; 2023 Community Business Services. All rights reserved.</p>
+                <p class="chinese" style="display: none;">&copy; 2023 社区商业服务。保留所有权利。</p>
+                <p class="english" style="font-size: 0.8rem; margin-top: 5px;">Designed for small businesses with big dreams</p>
+                <p class="chinese" style="display: none; font-size: 0.8rem; margin-top: 5px;">为怀揣大梦想的小企业设计</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeSuccessModal">&times;</button>
+            <div style="text-align: center; padding: 20px 0;">
+                <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--success); margin-bottom: 20px;"></i>
+                <h2 class="english" style="color: var(--primary);">Thank You!</h2>
+                <h2 class="chinese" style="display: none; color: var(--primary);">感谢您！</h2>
+                <p class="english">Your inquiry has been sent successfully. We will contact you within 24 hours.</p>
+                <p class="chinese" style="display: none;">您的咨询已成功发送。我们将在24小时内联系您。</p>
+                <button class="btn" id="closeSuccessBtn" style="margin-top: 20px;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+         // 移动优先：移动菜单切换
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mainNav = document.getElementById('mainNav');
+        
+        mobileMenuBtn.addEventListener('click', function() {
+            mainNav.classList.toggle('active');
+            if (mainNav.classList.contains('active')) {
+                mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i>';
+            } else {
+                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            }
+        });
+        
+        // 检测浏览器语言偏好
+        function detectBrowserLanguage() {
+            const browserLang = navigator.language || navigator.userLanguage;
+            // 检查是否为中文（简体或繁体）
+            if (browserLang.startsWith('zh')) {
+                return 'chinese';
+            } else {
+                return 'english';
+            }
+        }
+        
+        // 语言切换功能
+        let currentLang = detectBrowserLanguage(); // 根据浏览器语言设置初始语言
+        
+        function switchLanguage() {
+            // 切换语言
+            currentLang = currentLang === 'english' ? 'chinese' : 'english';
+            updateLanguageDisplay();
+        }
+        
+        function updateLanguageDisplay() {
+            // 显示/隐藏语言元素
+            document.querySelectorAll('.english').forEach(el => {
+                el.style.display = currentLang === 'english' ? 'block' : 'none';
+            });
+            
+            document.querySelectorAll('.chinese').forEach(el => {
+                el.style.display = currentLang === 'chinese' ? 'block' : 'none';
+            });
+            
+            // 更新语言切换按钮文本
+            const mobileSwitchText = document.querySelector('#mobileLangSwitch span:not(.fa-globe)');
+            const desktopSwitchText = document.querySelector('#desktopLangSwitch span:not(.fa-globe)');
+            
+            if (currentLang === 'english') {
+                if (mobileSwitchText) mobileSwitchText.textContent = '网站制作';
+                if (desktopSwitchText) desktopSwitchText.textContent = '网站制作';
+            } else {
+                if (mobileSwitchText) mobileSwitchText.textContent = 'Website Development';
+                if (desktopSwitchText) desktopSwitchText.textContent = 'Website Development';
+            }
+            
+            // 关闭移动菜单（如果打开）
+            mainNav.classList.remove('active');
+            mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+        }
+        
+        // 初始化语言显示
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLanguageDisplay();
+        });
+        
+        // 为两个语言切换按钮添加事件监听
+        const mobileLangSwitch = document.getElementById('mobileLangSwitch');
+        const desktopLangSwitch = document.getElementById('desktopLangSwitch');
+        
+        if (mobileLangSwitch) {
+            mobileLangSwitch.addEventListener('click', switchLanguage);
+        }
+        
+        if (desktopLangSwitch) {
+            desktopLangSwitch.addEventListener('click', switchLanguage);
+        }
+        
+        // 微信二维码图片加载失败检测
+        const qrImage = document.querySelector('.qr-code img');
+        const fallback = document.getElementById('wechat-fallback');
+        
+        if (qrImage) {
+            qrImage.onerror = function() {
+                // 图片加载失败，显示备用内容
+                this.style.display = 'none';
+                if (fallback) {
+                    fallback.style.display = 'flex';
+                }
+            };
+            
+            // 可选：检查图片是否已加载完成（针对缓存的图片）
+            if (qrImage.complete && qrImage.naturalWidth === 0) {
+                qrImage.onerror();
+            }
+        }
+        
+        // 演示标签功能
+        const demoTabs = document.querySelectorAll('.demo-tab');
+        const demoContents = document.querySelectorAll('.demo-content');
+        
+        demoTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // 更新活动标签
+                demoTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 显示对应内容
+                demoContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `${tabId}-demo`) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        // 服务按钮点击
+        const serviceButtons = document.querySelectorAll('[data-service]');
+        serviceButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const serviceType = this.getAttribute('data-service');
+                const serviceSelect = document.getElementById('service');
+                
+                // 滚动到联系表单
+                document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+                
+                // 设置服务选择
+                if (serviceSelect) {
+                    serviceSelect.value = serviceType;
+                }
+                
+                // 如果移动菜单打开，关闭它
+                mainNav.classList.remove('active');
+                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            });
+        });
+        
+        // 咨询表单提交
+        const inquiryForm = document.getElementById('inquiryForm');
+        const successModal = document.getElementById('successModal');
+        const closeSuccessModal = document.getElementById('closeSuccessModal');
+        const closeSuccessBtn = document.getElementById('closeSuccessBtn');
+        const inquiryBtn = document.getElementById('inquiryBtn');
+        const customQuoteBtn = document.getElementById('customQuoteBtn');
+        
+        inquiryForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 在实际应用中，这里会将表单数据发送到服务器
+            // 对于此演示，我们只显示成功消息
+            successModal.style.display = 'flex';
+            inquiryForm.reset();
+        });
+        
+        inquiryBtn.addEventListener('click', function() {
+            document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        customQuoteBtn.addEventListener('click', function() {
+            document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+            const serviceSelect = document.getElementById('service');
+            if (serviceSelect) {
+                serviceSelect.value = 'custom';
+            }
+        });
+        
+        // 关闭成功模态框
+        closeSuccessModal.addEventListener('click', function() {
+            successModal.style.display = 'none';
+        });
+        
+        closeSuccessBtn.addEventListener('click', function() {
+            successModal.style.display = 'none';
+        });
+        
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(event) {
+            if (event.target === successModal) {
+                successModal.style.display = 'none';
+            }
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // 如果移动菜单打开，关闭它
+                    mainNav.classList.remove('active');
+                    mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                }
+            });
+        });
+        
+        // 表单验证
+        const formControls = document.querySelectorAll('.form-control');
+        formControls.forEach(control => {
+            control.addEventListener('blur', function() {
+                if (this.value.trim() === '') {
+                    this.style.borderColor = '#ff6b6b';
+                } else {
+                    this.style.borderColor = '#ddd';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
