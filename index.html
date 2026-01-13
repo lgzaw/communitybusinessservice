@@ -64,6 +64,7 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
+            position: relative;
         }
         
         .logo {
@@ -86,6 +87,15 @@
             font-size: 1.5rem;
             color: var(--primary);
             cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .mobile-menu-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .mobile-menu-btn.active {
+            transform: rotate(90deg);
         }
         
         .desktop-menu-btn {
@@ -103,37 +113,120 @@
         
         nav.active {
             display: flex;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         nav a {
             text-decoration: none;
             color: var(--dark);
             font-weight: 500;
-            padding: 10px 0;
-            transition: color 0.3s;
+            padding: 12px 0;
+            transition: all 0.3s;
             border-bottom: 1px solid #f0f0f0;
+            position: relative;
         }
         
         nav a:hover {
             color: var(--primary);
+            padding-left: 10px;
         }
         
-        .lang-switch {
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        /* 语言切换按钮 - 移动端 */
+        .mobile-lang-switch {
             display: flex;
             align-items: center;
-            gap: 5px;
-            background-color: var(--primary);
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary) 0%, #1e3d6f 100%);
             color: white;
             padding: 8px 16px;
             border-radius: 50px;
             cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-            justify-content: center;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(44, 90, 160, 0.2);
+            position: absolute;
+            right: 50px; /* 放在菜单按钮左侧 */
         }
         
-        .lang-switch:hover {
-            background-color: #1e3d6f;
+        .mobile-lang-switch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(44, 90, 160, 0.3);
+            background: linear-gradient(135deg, #1e3d6f 0%, var(--primary) 100%);
+        }
+        
+        .mobile-lang-switch:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(44, 90, 160, 0.2);
+        }
+        
+        /* 语言切换按钮 - 桌面端 */
+        .desktop-lang-switch {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary) 0%, #1e3d6f 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            margin-left: 20px;
+            box-shadow: 0 4px 6px rgba(44, 90, 160, 0.2);
+        }
+        
+        .desktop-lang-switch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(44, 90, 160, 0.3);
+            background: linear-gradient(135deg, #1e3d6f 0%, var(--primary) 100%);
+        }
+        
+        .desktop-lang-switch:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(44, 90, 160, 0.2);
+        }
+        
+        .lang-icon {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
         }
         
         /* Hero Section */
@@ -148,6 +241,18 @@
             font-size: 2.2rem;
             margin-bottom: 15px;
             line-height: 1.3;
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .price-tag {
@@ -160,6 +265,16 @@
             font-weight: 700;
             margin: 20px 0;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
         }
         
         .guarantee {
@@ -172,6 +287,7 @@
             margin-top: 10px;
             font-weight: 600;
             font-size: 0.9rem;
+            animation: fadeIn 2s ease-out;
         }
         
         .guarantee i {
@@ -186,6 +302,18 @@
             padding: 25px;
             margin: 40px 0;
             border-radius: 0 10px 10px 0;
+            animation: slideInRight 1s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
         
         .notice h3 {
@@ -210,6 +338,19 @@
             margin-bottom: 40px;
             font-size: 2rem;
             color: var(--primary);
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: var(--secondary);
+            border-radius: 2px;
         }
         
         .service-detail {
@@ -219,6 +360,12 @@
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 40px;
             padding: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .service-detail:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
         }
         
         .service-detail h3 {
@@ -244,6 +391,12 @@
             font-weight: 700;
             margin: 10px 0;
             font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        .service-price-tag:hover {
+            background-color: var(--secondary);
+            transform: scale(1.05);
         }
         
         .feature-list {
@@ -256,6 +409,11 @@
             border-bottom: 1px solid #eee;
             display: flex;
             align-items: flex-start;
+            transition: padding-left 0.3s;
+        }
+        
+        .feature-list li:hover {
+            padding-left: 10px;
         }
         
         .feature-list li:last-child {
@@ -271,7 +429,7 @@
         
         .btn {
             display: inline-block;
-            background-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, #1e3d6f 100%);
             color: white;
             padding: 12px 30px;
             border-radius: 50px;
@@ -283,20 +441,41 @@
             text-align: center;
             width: 100%;
             margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
         }
         
         .btn:hover {
-            background-color: #1e3d6f;
+            background: linear-gradient(135deg, #1e3d6f 0%, var(--primary) 100%);
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
         .btn-secondary {
-            background-color: var(--secondary);
+            background: linear-gradient(135deg, var(--secondary) 0%, #e05a2a 100%);
         }
         
         .btn-secondary:hover {
-            background-color: #e05a2a;
+            background: linear-gradient(135deg, #e05a2a 0%, var(--secondary) 100%);
         }
         
         /* Hourly Rate Section */
@@ -320,6 +499,11 @@
             padding: 15px 30px;
             border-radius: 10px;
             margin: 20px 0;
+            transition: transform 0.3s;
+        }
+        
+        .rate-box:hover {
+            transform: scale(1.05);
         }
         
         .rate-amount {
@@ -342,6 +526,13 @@
             border-radius: 50px;
             font-weight: 500;
             font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .service-tag:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
         }
         
         /* Demo Section */
@@ -366,6 +557,28 @@
             transition: all 0.3s;
             border: 2px solid transparent;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .demo-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(44, 90, 160, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .demo-tab:hover::before {
+            left: 100%;
+        }
+        
+        .demo-tab:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
         
         .demo-tab.active {
@@ -388,8 +601,8 @@
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .demo-header {
@@ -473,13 +686,14 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 1rem;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
         }
         
         .form-control:focus {
             border-color: var(--primary);
             outline: none;
             box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+            transform: translateY(-2px);
         }
         
         .contact-methods {
@@ -494,6 +708,11 @@
             border-radius: 10px;
             padding: 20px;
             text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .contact-card:hover {
+            transform: translateY(-5px);
         }
         
         .contact-card h4 {
@@ -518,6 +737,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: transform 0.3s;
+        }
+        
+        .qr-code:hover {
+            transform: scale(1.05);
         }
         
         .qr-code img {
@@ -526,6 +750,11 @@
             background-color: #f0f0f0;
             margin-bottom: 10px;
             border-radius: 5px;
+            transition: transform 0.3s;
+        }
+        
+        .qr-code:hover img {
+            transform: rotate(5deg);
         }
         
         /* CTA Section */
@@ -606,6 +835,18 @@
             position: relative;
             max-height: 90vh;
             overflow-y: auto;
+            animation: modalAppear 0.3s ease-out;
+        }
+        
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
         
         .close-modal {
@@ -617,6 +858,11 @@
             font-size: 1.5rem;
             cursor: pointer;
             color: var(--dark);
+            transition: transform 0.3s;
+        }
+        
+        .close-modal:hover {
+            transform: rotate(90deg);
         }
         
         /* Tablet and Desktop Styles */
@@ -635,6 +881,10 @@
                 display: none;
             }
             
+            .mobile-lang-switch {
+                display: none !important;
+            }
+            
             .desktop-menu-btn {
                 display: block;
             }
@@ -647,16 +897,16 @@
                 padding-top: 0;
                 border-top: none;
                 gap: 25px;
+                align-items: center;
             }
             
             nav a {
-                padding: 0;
+                padding: 5px 0;
                 border-bottom: none;
             }
             
-            .lang-switch {
-                margin-top: 0;
-                margin-left: 15px;
+            .desktop-lang-switch {
+                display: flex;
             }
             
             .hero h1 {
@@ -724,6 +974,62 @@
             }
         }
         
+        /* 语言切换器浮动标签 */
+        .lang-floating-label {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .desktop-lang-switch:hover .lang-floating-label {
+            opacity: 1;
+        }
+        
+        /* 语言切换波纹效果 */
+        .lang-switch-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .lang-switch-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .lang-switch-btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
         /* Print styles */
         @media print {
             .no-print {
@@ -756,16 +1062,18 @@
                     <span class="english">Community Business Services</span>
                     <span class="chinese" style="display: none;">社区商业服务</span>
                 </div>
-                 <!-- 移动端语言切换按钮（显示在logo旁边） -->
-                <div class="mobile-lang-switch" id="mobileLangSwitch">
-                    <i class="fas fa-globe"></i>
-                    <span class="english">网站制作</span>
-                    <span class="chinese" style="display: none;">Website Development</span>
+                
+                <!-- 移动端语言切换按钮 -->
+                <div class="mobile-lang-switch lang-switch-btn" id="mobileLangSwitch">
+                    <i class="fas fa-globe lang-icon"></i>
+                    <span id="mobileLangText">网站制作</span>
                 </div>
+                
                 <button class="mobile-menu-btn" id="mobileMenuBtn">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
+            
             <nav id="mainNav">
                 <a href="#services" class="english">Services</a>
                 <a href="#services" class="chinese" style="display: none;">服务项目</a>
@@ -773,11 +1081,13 @@
                 <a href="#demo" class="chinese" style="display: none;">案例展示</a>
                 <a href="#contact" class="english">Contact</a>
                 <a href="#contact" class="chinese" style="display: none;">联系我们</a>
-                <!-- 桌面端语言切换按钮（在导航菜单中） -->
-                <div class="desktop-lang-switch" id="desktopLangSwitch">
-                    <i class="fas fa-globe"></i>
-                    <span class="english">网站制作</span>
-                    <span class="chinese" style="display: none;">Website Development</span>
+                
+                <!-- 桌面端语言切换按钮 -->
+                <div class="desktop-lang-switch lang-switch-btn" id="desktopLangSwitch">
+                    <i class="fas fa-globe lang-icon"></i>
+                    <span id="desktopLangText">网站制作</span>
+                    <div class="lang-floating-label english">Switch Language</div>
+                    <div class="lang-floating-label chinese" style="display: none;">切换语言</div>
                 </div>
             </nav>
         </div>
@@ -965,7 +1275,7 @@
                     <h3 class="english">Simple Business Website</h3>
                     <h3 class="chinese" style="display: none;">简单商业网站</h3>
                     <p class="english">Consider this website a benchmark for professional business web design. The example showcases essential features that create an impactful and functional online presence.</p>
-                    <p class="chinese" style="display: nonoe;">欢迎参考本网站作为高效商业设计的典范。以下演示展现了构成专业线上形象的基础功能与核心要素。</p>
+                    <p class="chinese" style="display: none;">欢迎参考本网站作为高效商业设计的典范。以下演示展现了构成专业线上形象的基础功能与核心要素。</p>
                     <div class="service-price-tag">Starting at $500</div>
                 </div>
                 <div class="demo-preview">
@@ -1239,12 +1549,13 @@
     </div>
 
     <script>
-         // 移动优先：移动菜单切换
+        // 移动优先：移动菜单切换
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const mainNav = document.getElementById('mainNav');
         
         mobileMenuBtn.addEventListener('click', function() {
             mainNav.classList.toggle('active');
+            mobileMenuBtn.classList.toggle('active');
             if (mainNav.classList.contains('active')) {
                 mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i>';
             } else {
@@ -1267,6 +1578,18 @@
         let currentLang = detectBrowserLanguage(); // 根据浏览器语言设置初始语言
         
         function switchLanguage() {
+            // 添加点击反馈效果
+            const activeBtn = currentLang === 'english' ? 
+                document.getElementById('mobileLangSwitch') : 
+                document.getElementById('desktopLangSwitch');
+            
+            if (activeBtn) {
+                activeBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    activeBtn.style.transform = '';
+                }, 150);
+            }
+            
             // 切换语言
             currentLang = currentLang === 'english' ? 'chinese' : 'english';
             updateLanguageDisplay();
@@ -1282,21 +1605,24 @@
                 el.style.display = currentLang === 'chinese' ? 'block' : 'none';
             });
             
-            // 更新语言切换按钮文本
-            const mobileSwitchText = document.querySelector('#mobileLangSwitch span:not(.fa-globe)');
-            const desktopSwitchText = document.querySelector('#desktopLangSwitch span:not(.fa-globe)');
+            // 更新两个语言切换按钮的文本
+            const mobileLangText = document.getElementById('mobileLangText');
+            const desktopLangText = document.getElementById('desktopLangText');
             
             if (currentLang === 'english') {
-                if (mobileSwitchText) mobileSwitchText.textContent = '网站制作';
-                if (desktopSwitchText) desktopSwitchText.textContent = '网站制作';
+                if (mobileLangText) mobileLangText.textContent = '中文';
+                if (desktopLangText) desktopLangText.textContent = '中文';
             } else {
-                if (mobileSwitchText) mobileSwitchText.textContent = 'Website Development';
-                if (desktopSwitchText) desktopSwitchText.textContent = 'Website Development';
+                if (mobileLangText) mobileLangText.textContent = 'Englsih';
+                if (desktopLangText) desktopLangText.textContent = 'English';
             }
             
             // 关闭移动菜单（如果打开）
-            mainNav.classList.remove('active');
-            mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            if (mainNav.classList.contains('active')) {
+                mainNav.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            }
         }
         
         // 初始化语言显示
@@ -1310,6 +1636,12 @@
         
         if (mobileLangSwitch) {
             mobileLangSwitch.addEventListener('click', switchLanguage);
+            mobileLangSwitch.addEventListener('touchstart', function(e) {
+                this.style.opacity = '0.7';
+            });
+            mobileLangSwitch.addEventListener('touchend', function(e) {
+                this.style.opacity = '';
+            });
         }
         
         if (desktopLangSwitch) {
@@ -1351,7 +1683,9 @@
                 demoContents.forEach(content => {
                     content.classList.remove('active');
                     if (content.id === `${tabId}-demo`) {
-                        content.classList.add('active');
+                        setTimeout(() => {
+                            content.classList.add('active');
+                        }, 10);
                     }
                 });
             });
@@ -1364,6 +1698,12 @@
                 const serviceType = this.getAttribute('data-service');
                 const serviceSelect = document.getElementById('service');
                 
+                // 添加点击动画
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+                
                 // 滚动到联系表单
                 document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
                 
@@ -1373,8 +1713,11 @@
                 }
                 
                 // 如果移动菜单打开，关闭它
-                mainNav.classList.remove('active');
-                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                if (mainNav.classList.contains('active')) {
+                    mainNav.classList.remove('active');
+                    mobileMenuBtn.classList.remove('active');
+                    mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                }
             });
         });
         
@@ -1396,10 +1739,18 @@
         });
         
         inquiryBtn.addEventListener('click', function() {
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
             document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
         });
         
         customQuoteBtn.addEventListener('click', function() {
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
             document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
             const serviceSelect = document.getElementById('service');
             if (serviceSelect) {
@@ -1436,8 +1787,11 @@
                     targetElement.scrollIntoView({ behavior: 'smooth' });
                     
                     // 如果移动菜单打开，关闭它
-                    mainNav.classList.remove('active');
-                    mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                    if (mainNav.classList.contains('active')) {
+                        mainNav.classList.remove('active');
+                        mobileMenuBtn.classList.remove('active');
+                        mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                    }
                 }
             });
         });
@@ -1452,6 +1806,42 @@
                     this.style.borderColor = '#ddd';
                 }
             });
+            
+            control.addEventListener('focus', function() {
+                this.style.borderColor = 'var(--primary)';
+            });
+        });
+        
+        // 添加页面加载动画
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+        
+        // 添加滚动动画
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        // 观察需要动画的元素
+        document.querySelectorAll('.service-detail, .contact-card, .demo-tabs, .lead-form').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.5s, transform 0.5s';
+            observer.observe(el);
         });
     </script>
 </body>
