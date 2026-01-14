@@ -1395,7 +1395,8 @@
                     <h3 class="english">Send Your Inquiry</h3>
                     <h3 class="chinese" style="display: none;">发送您的咨询</h3>
                     
-                    <form id="inquiryForm">
+                    <form id="inquiryForm" action="https://formspree.io/f/xnjjnjkz" method="POST">
+                        <input type="hidden" name="_replyto" value="" id="replyto-email">
                         <div class="form-group">
                             <label for="name" class="english">Your Name</label>
                             <label for="name" class="chinese" style="display: none;">您的姓名</label>
@@ -1546,7 +1547,7 @@
         </div>
     </div>
 
-    <script>
+  <script>
         // 移动优先：移动菜单切换
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const mainNav = document.getElementById('mainNav');
@@ -1611,7 +1612,7 @@
                 if (mobileLangText) mobileLangText.textContent = '中文';
                 if (desktopLangText) desktopLangText.textContent = '中文';
             } else {
-                if (mobileLangText) mobileLangText.textContent = 'Englsih';
+                if (mobileLangText) mobileLangText.textContent = 'English';
                 if (desktopLangText) desktopLangText.textContent = 'English';
             }
             
@@ -1727,14 +1728,68 @@
         const inquiryBtn = document.getElementById('inquiryBtn');
         const customQuoteBtn = document.getElementById('customQuoteBtn');
         
-        inquiryForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // 在实际应用中，这里会将表单数据发送到服务器
-            // 对于此演示，我们只显示成功消息
-            successModal.style.display = 'flex';
-            inquiryForm.reset();
-        });
+        // Form submission with Formspree (FIXED VERSION - no async/await)
+        if (inquiryForm) {
+            inquiryForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Update hidden replyto field with user's email
+                const userEmail = document.getElementById('email').value;
+                const replytoField = document.getElementById('replyto-email');
+                if (replytoField) {
+                    replytoField.value = userEmail;
+                }
+                
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                
+                if (currentLang === 'english') {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+                } else {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在发送...';
+                }
+                
+                submitBtn.disabled = true;
+                
+                // Send to Formspree using then/catch instead of async/await
+                const formData = new FormData(this);
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Show success modal
+                        successModal.style.display = 'flex';
+                        inquiryForm.reset();
+                        
+                        // Optional: Track submission in Formspree dashboard
+                        console.log('Form submitted successfully to Formspree');
+                    } else {
+                        throw new Error('Form submission failed');
+                    }
+                })
+                .catch(error => {
+                    // Show error message in user's language
+                    if (currentLang === 'english') {
+                        alert('Error sending message. Please try again or email us directly at info@communitybusinessservices.ca');
+                    } else {
+                        alert('发送消息时出错。请重试或直接给我们发邮件：info@communitybusinessservices.ca');
+                    }
+                    console.error('Formspree error:', error);
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            });
+        }
         
         inquiryBtn.addEventListener('click', function() {
             this.style.transform = 'scale(0.98)';
@@ -1757,13 +1812,17 @@
         });
         
         // 关闭成功模态框
-        closeSuccessModal.addEventListener('click', function() {
-            successModal.style.display = 'none';
-        });
+        if (closeSuccessModal) {
+            closeSuccessModal.addEventListener('click', function() {
+                successModal.style.display = 'none';
+            });
+        }
         
-        closeSuccessBtn.addEventListener('click', function() {
-            successModal.style.display = 'none';
-        });
+        if (closeSuccessBtn) {
+            closeSuccessBtn.addEventListener('click', function() {
+                successModal.style.display = 'none';
+            });
+        }
         
         // 点击模态框外部关闭
         window.addEventListener('click', function(event) {
@@ -1844,4 +1903,5 @@
     </script>
 </body>
 </html>
+
 
