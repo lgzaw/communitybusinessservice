@@ -1396,23 +1396,28 @@
                     <h3 class="chinese" style="display: none;">发送您的咨询</h3>
                     
                     <form id="inquiryForm" action="https://formspree.io/f/xnjjnjkz" method="POST">
+                        <!-- Hidden field for reply-to -->
                         <input type="hidden" name="_replyto" value="" id="replyto-email">
+                        
                         <div class="form-group">
                             <label for="name" class="english">Your Name</label>
                             <label for="name" class="chinese" style="display: none;">您的姓名</label>
-                            <input type="text" id="name" class="form-control" required>
+                            <!-- ADD name="name" -->
+                            <input type="text" id="name" name="name" class="form-control" required>
                         </div>
                         
                         <div class="form-group">
                             <label for="email" class="english">Email Address</label>
                             <label for="email" class="chinese" style="display: none;">电子邮件地址</label>
-                            <input type="email" id="email" class="form-control" required>
+                            <!-- ADD name="email" -->
+                            <input type="email" id="email" name="email" class="form-control" required>
                         </div>
                         
                         <div class="form-group">
                             <label for="service" class="english">Service Interested In</label>
                             <label for="service" class="chinese" style="display: none;">感兴趣的服务</label>
-                            <select id="service" class="form-control" required>
+                            <!-- ADD name="service" -->
+                            <select id="service" name="service" class="form-control" required>
                                 <option value="" class="english">Select a service</option>
                                 <option value="" class="chinese" style="display: none;">选择服务</option>
                                 <option value="simple" class="english">Simple Website ($500+)</option>
@@ -1429,7 +1434,8 @@
                         <div class="form-group">
                             <label for="message" class="english">Project Details</label>
                             <label for="message" class="chinese" style="display: none;">项目详情</label>
-                            <textarea id="message" class="form-control" rows="50" placeholder="Tell us about your project..."></textarea>
+                            <!-- ADD name="message" -->
+                            <textarea id="message" name="message" class="form-control" rows="5" placeholder="Tell us about your project..."></textarea>
                         </div>
                         
                         <button type="submit" class="btn">
@@ -1903,6 +1909,7 @@
     </script>
 </body>
 </html>
+
 
 
 
