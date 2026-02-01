@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Image Upload Test | Community Business Services</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .test-header p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        .test-note {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .test-note h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .test-note ul {
+            padding-left: 20px;
+            color: #555;
+        }
+        
+        .test-note li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .upload-section {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section.drag-over {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            margin-bottom: 20px;
+            color: #555;
+        }
+        
+        .upload-input {
+            display: none;
+        }
+        
+        .upload-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .upload-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .image-preview {
+            margin-top: 30px;
+        }
+        
+        .preview-title {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .image-card {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .image-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .image-info {
+            padding: 10px;
+            background: white;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .api-info {
+            background: #e9f5ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .api-info h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .test-container {
+                padding: 20px;
+            }
+            
+            .test-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .preview-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-vial"></i> Image Upload Test</h1>
+            <p>This is a non-indexed testing page for Android Studio image uploads</p>
+        </div>
+        
+        <div class="test-note">
+            <h3><i class="fas fa-info-circle"></i> Important Notes:</h3>
+            <ul>
+                <li>This page is NOT indexed by search engines (noindex, nofollow)</li>
+                <li>Uploaded images are stored in MongoDB via our backend server</li>
+                <li>Images are displayed here for testing purposes only</li>
+                <li>Maximum upload size: 5MB per image</li>
+                <li>Supported formats: JPG, PNG, GIF, WebP</li>
+            </ul>
+        </div>
+        
+        <div class="upload-section" id="dropZone">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <p class="upload-text">Drag & drop images here or click to browse</p>
+            <label for="fileInput" class="upload-btn">
+                <i class="fas fa-upload"></i> Select Images
+            </label>
+            <input type="file" id="fileInput" class="upload-input" accept="image/*" multiple>
+        </div>
+        
+        <div id="statusMessage" class="status-message"></div>
+        
+        <div class="image-preview" id="imagePreview">
+            <h3 class="preview-title"><i class="fas fa-images"></i> Uploaded Images</h3>
+            <div class="preview-grid" id="previewGrid">
+                <!-- Images will be dynamically added here -->
+                <p id="noImages">No images uploaded yet. Upload some images to see them here.</p>
+            </div>
+        </div>
+        
+        <div class="api-info">
+            <h3><i class="fas fa-code"></i> API Endpoint Information</h3>
+            <p><strong>POST Endpoint:</strong></p>
+            <div class="code-block">
+                https://communitybusinessservices.ca/api/upload
+            </div>
+            
+            <p><strong>GET Endpoint (retrieve all images):</strong></p>
+            <div class="code-block">
+                https://communitybusinessservices.ca/api/images
+            </div>
+            
+            <p><strong>Android Studio Code Example:</strong></p>
+            <div class="code-block">
+                // Using Retrofit<br>
+                @Multipart<br>
+                @POST("/api/upload")<br>
+                suspend fun uploadImage(<br>
+                    @Part("source") source: RequestBody,<br>
+                    @Part image: MultipartBody.Part<br>
+                ): Response&lt;UploadResponse&gt;
+            </div>
+        </div>
+        
+        <a href="index.html" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Main Website
+        </a>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const previewGrid = document.getElementById('previewGrid');
+        const statusMessage = document.getElementById('statusMessage');
+        const noImages = document.getElementById('noImages');
+        
+        // API endpoints
+        const UPLOAD_API = '/api/upload';
+        const GET_IMAGES_API = '/api/images';
+        
+        // Drag and drop functionality
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+        
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            handleFiles(files);
+        });
+        
+        // Click on drop zone triggers file input
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // Handle selected files
+        async function handleFiles(files) {
+            if (!files.length) return;
+            
+            // Remove "no images" message if it exists
+            if (noImages) {
+                noImages.style.display = 'none';
+            }
+            
+            // Create an array to store upload promises
+            const uploadPromises = [];
+            
+            // Process each file
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Validate file type
+                if (!file.type.match('image.*')) {
+                    showStatus('Please upload only image files', 'error');
+                    continue;
+                }
+                
+                // Validate file size (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    showStatus(`File ${file.name} is too large (max 5MB)`, 'error');
+                    continue;
+                }
+                
+                // Show uploading status
+                showStatus(`Uploading ${file.name}...`, 'info');
+                
+                // Create preview immediately
+                createPreview(file);
+                
+                // Upload to server
+                uploadPromises.push(uploadFile(file));
+            }
+            
+            // Wait for all uploads to complete
+            try {
+                const results = await Promise.allSettled(uploadPromises);
+                
+                // Check results
+                const successfulUploads = results.filter(r => r.status === 'fulfilled' && r.value.success);
+                const failedUploads = results.filter(r => r.status === 'rejected' || !r.value.success);
+                
+                if (successfulUploads.length > 0) {
+                    showStatus(`Successfully uploaded ${successfulUploads.length} image(s)`, 'success');
+                }
+                
+                if (failedUploads.length > 0) {
+                    showStatus(`${failedUploads.length} image(s) failed to upload`, 'error');
+                }
+                
+                // Refresh image list from server
+                loadImagesFromServer();
+                
+            } catch (error) {
+                showStatus('Error uploading images', 'error');
+                console.error('Upload error:', error);
+            }
+        }
+        
+        // Upload file to server
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('source', 'web-test-page');
+            formData.append('timestamp', new Date().toISOString());
+            formData.append('filename', file.name);
+            
+            try {
+                const response = await fetch(UPLOAD_API, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                return { success: true, data: result };
+                
+            } catch (error) {
+                console.error('Upload failed:', error);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // Create local preview before upload
+        function createPreview(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const imageCard = document.createElement('div');
+                imageCard.className = 'image-card';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = file.name;
+                
+                const info = document.createElement('div');
+                info.className = 'image-info';
+                info.innerHTML = `
+                    <strong>${file.name}</strong><br>
+                    <small>${formatFileSize(file.size)}</small><br>
+                    <small style="color:#667eea;">Uploading...</small>
+                `;
+                
+                imageCard.appendChild(img);
+                imageCard.appendChild(info);
+                previewGrid.appendChild(imageCard);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        // Load images from server
+        async function loadImagesFromServer() {
+            try {
+                const response = await fetch(GET_IMAGES_API);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const images = await response.json();
+                
+                // Clear current previews
+                previewGrid.innerHTML = '';
+                
+                if (images.length === 0) {
+                    previewGrid.innerHTML = '<p id="noImages">No images uploaded yet. Upload some images to see them here.</p>';
+                    return;
+                }
+                
+                // Display images from server
+                images.forEach(image => {
+                    const imageCard = document.createElement('div');
+                    imageCard.className = 'image-card';
+                    
+                    const img = document.createElement('img');
+                    img.src = image.url || `data:${image.contentType};base64,${image.data}`;
+                    img.alt = image.filename || 'Uploaded image';
+                    
+                    const info = document.createElement('div');
+                    info.className = 'image-info';
+                    info.innerHTML = `
+                        <strong>${image.filename || 'Image'}</strong><br>
+                        <small>${formatFileSize(image.size || 0)}</small><br>
+                        <small>${new Date(image.uploadDate).toLocaleDateString()}</small>
+                    `;
+                    
+                    imageCard.appendChild(img);
+                    imageCard.appendChild(info);
+                    previewGrid.appendChild(imageCard);
+                });
+                
+            } catch (error) {
+                console.error('Error loading images:', error);
+                showStatus('Error loading images from server', 'error');
+            }
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message status-${type}`;
+            statusMessage.style.display = 'block';
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Initialize: Load existing images on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadImagesFromServer();
+        });
+    </script>
+</body>
+</html>
