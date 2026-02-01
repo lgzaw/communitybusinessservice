@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Image Upload Test | Community Business Services</title>
+    <title>Image Gallery Test | Community Business Services</title>
     <style>
         * {
             margin: 0;
@@ -16,9 +16,6 @@
             font-family: 'Poppins', 'Noto Sans SC', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
         
@@ -28,12 +25,15 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             padding: 40px;
             width: 100%;
-            max-width: 800px;
+            max-width: 1000px;
+            margin: 0 auto;
         }
         
         .test-header {
             text-align: center;
             margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
         }
         
         .test-header h1 {
@@ -48,10 +48,31 @@
             line-height: 1.6;
         }
         
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+        
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
         .test-note {
             background: #f8f9fa;
             border-left: 4px solid #667eea;
-            padding: 15px;
+            padding: 20px;
             margin: 20px 0;
             border-radius: 5px;
         }
@@ -71,121 +92,186 @@
             line-height: 1.5;
         }
         
-        .upload-section {
-            border: 2px dashed #ddd;
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin: 30px 0;
-            transition: all 0.3s ease;
-        }
-        
-        .upload-section.drag-over {
-            border-color: #667eea;
+            padding: 20px;
             background: #f0f4ff;
+            border-radius: 10px;
         }
         
-        .upload-icon {
-            font-size: 3rem;
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 120px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
             color: #667eea;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
         
-        .upload-text {
-            margin-bottom: 20px;
-            color: #555;
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
         }
         
-        .upload-input {
-            display: none;
-        }
-        
-        .upload-btn {
+        .refresh-btn {
             background: #667eea;
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 12px 25px;
             border-radius: 25px;
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        .upload-btn:hover {
+        .refresh-btn:hover {
             background: #5a67d8;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
         
-        .image-preview {
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+        
+        .image-gallery {
             margin-top: 30px;
         }
         
-        .preview-title {
+        .gallery-title {
             color: #333;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             text-align: center;
-            font-size: 1.3rem;
+            font-size: 1.5rem;
         }
         
-        .preview-grid {
+        .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
             margin-top: 15px;
         }
         
         .image-card {
-            border-radius: 8px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: white;
         }
         
         .image-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
         
-        .image-card img {
+        .image-preview {
             width: 100%;
-            height: 150px;
+            height: 180px;
             object-fit: cover;
             display: block;
+            border-bottom: 1px solid #eee;
         }
         
         .image-info {
-            padding: 10px;
-            background: white;
+            padding: 15px;
+        }
+        
+        .image-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .image-details {
+            display: flex;
+            justify-content: space-between;
             font-size: 0.8rem;
             color: #666;
+            margin-bottom: 8px;
         }
         
-        .status-message {
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
+        .image-source {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .source-android {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .source-web {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .no-images {
             text-align: center;
-            display: none;
+            padding: 40px 20px;
+            color: #666;
+            grid-column: 1 / -1;
         }
         
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .no-images i {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 15px;
         }
         
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .api-info {
             background: #e9f5ff;
             padding: 20px;
             border-radius: 10px;
-            margin-top: 30px;
+            margin-top: 40px;
             font-family: 'Courier New', monospace;
             font-size: 0.9rem;
         }
@@ -202,6 +288,7 @@
             border-radius: 5px;
             overflow-x: auto;
             margin: 10px 0;
+            font-size: 0.85rem;
         }
         
         .back-link {
@@ -225,8 +312,34 @@
                 font-size: 1.8rem;
             }
             
-            .preview-grid {
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .stats {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .stat-box {
+                flex: 1;
+                min-width: 0;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .gallery-grid {
                 grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            
+            .image-preview {
+                height: 140px;
             }
         }
     </style>
@@ -235,63 +348,89 @@
 <body>
     <div class="test-container">
         <div class="test-header">
-            <h1><i class="fas fa-vial"></i> Image Upload Test</h1>
-            <p>This is a non-indexed testing page for Android Studio image uploads</p>
+            <h1><i class="fas fa-images"></i> Android Studio Image Gallery</h1>
+            <p>Display-only test page for images uploaded from Android Studio</p>
+            <div id="apiStatus" class="status-badge status-connected">
+                <i class="fas fa-check-circle"></i> API Connected
+            </div>
         </div>
         
         <div class="test-note">
-            <h3><i class="fas fa-info-circle"></i> Important Notes:</h3>
+            <h3><i class="fas fa-info-circle"></i> About This Page</h3>
             <ul>
-                <li>This page is NOT indexed by search engines (noindex, nofollow)</li>
-                <li>Uploaded images are stored in MongoDB via our backend server</li>
-                <li>Images are displayed here for testing purposes only</li>
-                <li>Maximum upload size: 5MB per image</li>
-                <li>Supported formats: JPG, PNG, GIF, WebP</li>
+                <li>This page is <strong>NOT indexed by search engines</strong> (noindex, nofollow)</li>
+                <li>Images are uploaded from Android Studio via our API</li>
+                <li>Upload API endpoint: <code>POST /api/android/upload</code></li>
+                <li>Images are stored in MongoDB and served through the backend</li>
+                <li>This page auto-refreshes every 30 seconds to show new uploads</li>
             </ul>
         </div>
         
-        <div class="upload-section" id="dropZone">
-            <div class="upload-icon">
-                <i class="fas fa-cloud-upload-alt"></i>
+        <div class="controls">
+            <div class="stats">
+                <div class="stat-box">
+                    <div id="totalImages" class="stat-value">0</div>
+                    <div class="stat-label">Total Images</div>
+                </div>
+                <div class="stat-box">
+                    <div id="androidImages" class="stat-value">0</div>
+                    <div class="stat-label">Android Uploads</div>
+                </div>
+                <div class="stat-box">
+                    <div id="lastUpdated" class="stat-value">--:--</div>
+                    <div class="stat-label">Last Updated</div>
+                </div>
             </div>
-            <p class="upload-text">Drag & drop images here or click to browse</p>
-            <label for="fileInput" class="upload-btn">
-                <i class="fas fa-upload"></i> Select Images
-            </label>
-            <input type="file" id="fileInput" class="upload-input" accept="image/*" multiple>
+            
+            <button class="refresh-btn" id="refreshBtn">
+                <i class="fas fa-sync-alt"></i>
+                Refresh Images
+            </button>
         </div>
         
-        <div id="statusMessage" class="status-message"></div>
-        
-        <div class="image-preview" id="imagePreview">
-            <h3 class="preview-title"><i class="fas fa-images"></i> Uploaded Images</h3>
-            <div class="preview-grid" id="previewGrid">
-                <!-- Images will be dynamically added here -->
-                <p id="noImages">No images uploaded yet. Upload some images to see them here.</p>
+        <div class="image-gallery">
+            <h3 class="gallery-title"><i class="fas fa-mobile-alt"></i> Images Uploaded from Android Studio</h3>
+            
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- Images will be dynamically loaded here -->
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading images from server...</p>
+                </div>
             </div>
         </div>
         
         <div class="api-info">
-            <h3><i class="fas fa-code"></i> API Endpoint Information</h3>
-            <p><strong>POST Endpoint:</strong></p>
+            <h3><i class="fas fa-code"></i> Android Studio Integration</h3>
+            <p><strong>Upload API Endpoint:</strong></p>
             <div class="code-block">
-                https://communitybusinessservices.ca/api/upload
+                POST https://communitybusinessservices.ca/api/android/upload
+                Content-Type: multipart/form-data
+                
+                Body:
+                - image: (File) The image to upload
+                - deviceModel: (String) Optional device information
+                - androidVersion: (String) Optional Android version
             </div>
             
-            <p><strong>GET Endpoint (retrieve all images):</strong></p>
+            <p><strong>Retrofit Example (Kotlin):</strong></p>
             <div class="code-block">
-                https://communitybusinessservices.ca/api/images
-            </div>
-            
-            <p><strong>Android Studio Code Example:</strong></p>
-            <div class="code-block">
-                // Using Retrofit<br>
-                @Multipart<br>
-                @POST("/api/upload")<br>
-                suspend fun uploadImage(<br>
-                    @Part("source") source: RequestBody,<br>
-                    @Part image: MultipartBody.Part<br>
-                ): Response&lt;UploadResponse&gt;
+                interface ImageUploadApi {
+                    @Multipart
+                    @POST("/api/android/upload")
+                    suspend fun uploadImage(
+                        @Part image: MultipartBody.Part,
+                        @Part("deviceModel") deviceModel: RequestBody? = null,
+                        @Part("androidVersion") androidVersion: RequestBody? = null
+                    ): Response&lt;UploadResponse&gt;
+                }
+                
+                // Usage:
+                val file = File("/path/to/image.jpg")
+                val requestFile = file.asRequestBody("image/*".toMediaType())
+                val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
+                
+                val response = api.uploadImage(imagePart)
             </div>
         </div>
         
@@ -301,223 +440,173 @@
     </div>
 
     <script>
-        // Get DOM elements
-        const fileInput = document.getElementById('fileInput');
-        const dropZone = document.getElementById('dropZone');
-        const previewGrid = document.getElementById('previewGrid');
-        const statusMessage = document.getElementById('statusMessage');
-        const noImages = document.getElementById('noImages');
-        
         // API endpoints
-        const UPLOAD_API = '/api/upload';
-        const GET_IMAGES_API = '/api/images';
+        const API_BASE = window.location.origin;
+        const GET_IMAGES_API = '/api/test/images';
+        const HEALTH_API = '/api/health';
         
-        // Drag and drop functionality
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
+        // DOM elements
+        const galleryGrid = document.getElementById('galleryGrid');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const apiStatus = document.getElementById('apiStatus');
+        const totalImagesEl = document.getElementById('totalImages');
+        const androidImagesEl = document.getElementById('androidImages');
+        const lastUpdatedEl = document.getElementById('lastUpdated');
+        
+        // Global state
+        let images = [];
+        let lastUpdateTime = null;
+        let autoRefreshInterval = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkApiHealth();
+            loadImages();
+            setupAutoRefresh();
         });
         
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drag-over');
-        });
-        
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-            
-            const files = e.dataTransfer.files;
-            handleFiles(files);
-        });
-        
-        // File input change
-        fileInput.addEventListener('change', (e) => {
-            const files = e.target.files;
-            handleFiles(files);
-        });
-        
-        // Click on drop zone triggers file input
-        dropZone.addEventListener('click', () => {
-            fileInput.click();
-        });
-        
-        // Handle selected files
-        async function handleFiles(files) {
-            if (!files.length) return;
-            
-            // Remove "no images" message if it exists
-            if (noImages) {
-                noImages.style.display = 'none';
-            }
-            
-            // Create an array to store upload promises
-            const uploadPromises = [];
-            
-            // Process each file
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                
-                // Validate file type
-                if (!file.type.match('image.*')) {
-                    showStatus('Please upload only image files', 'error');
-                    continue;
-                }
-                
-                // Validate file size (5MB max)
-                if (file.size > 5 * 1024 * 1024) {
-                    showStatus(`File ${file.name} is too large (max 5MB)`, 'error');
-                    continue;
-                }
-                
-                // Show uploading status
-                showStatus(`Uploading ${file.name}...`, 'info');
-                
-                // Create preview immediately
-                createPreview(file);
-                
-                // Upload to server
-                uploadPromises.push(uploadFile(file));
-            }
-            
-            // Wait for all uploads to complete
+        // Check API health
+        async function checkApiHealth() {
             try {
-                const results = await Promise.allSettled(uploadPromises);
-                
-                // Check results
-                const successfulUploads = results.filter(r => r.status === 'fulfilled' && r.value.success);
-                const failedUploads = results.filter(r => r.status === 'rejected' || !r.value.success);
-                
-                if (successfulUploads.length > 0) {
-                    showStatus(`Successfully uploaded ${successfulUploads.length} image(s)`, 'success');
+                const response = await fetch(HEALTH_API);
+                if (response.ok) {
+                    apiStatus.className = 'status-badge status-connected';
+                    apiStatus.innerHTML = '<i class="fas fa-check-circle"></i> API Connected';
+                } else {
+                    throw new Error('API not responding');
                 }
-                
-                if (failedUploads.length > 0) {
-                    showStatus(`${failedUploads.length} image(s) failed to upload`, 'error');
-                }
-                
-                // Refresh image list from server
-                loadImagesFromServer();
-                
             } catch (error) {
-                showStatus('Error uploading images', 'error');
-                console.error('Upload error:', error);
+                apiStatus.className = 'status-badge status-disconnected';
+                apiStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i> API Disconnected';
             }
-        }
-        
-        // Upload file to server
-        async function uploadFile(file) {
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('source', 'web-test-page');
-            formData.append('timestamp', new Date().toISOString());
-            formData.append('filename', file.name);
-            
-            try {
-                const response = await fetch(UPLOAD_API, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                
-                const result = await response.json();
-                return { success: true, data: result };
-                
-            } catch (error) {
-                console.error('Upload failed:', error);
-                return { success: false, error: error.message };
-            }
-        }
-        
-        // Create local preview before upload
-        function createPreview(file) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                const imageCard = document.createElement('div');
-                imageCard.className = 'image-card';
-                
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.alt = file.name;
-                
-                const info = document.createElement('div');
-                info.className = 'image-info';
-                info.innerHTML = `
-                    <strong>${file.name}</strong><br>
-                    <small>${formatFileSize(file.size)}</small><br>
-                    <small style="color:#667eea;">Uploading...</small>
-                `;
-                
-                imageCard.appendChild(img);
-                imageCard.appendChild(info);
-                previewGrid.appendChild(imageCard);
-            };
-            
-            reader.readAsDataURL(file);
         }
         
         // Load images from server
-        async function loadImagesFromServer() {
+        async function loadImages() {
             try {
+                showLoading();
+                
                 const response = await fetch(GET_IMAGES_API);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
                 
-                const images = await response.json();
+                const result = await response.json();
                 
-                // Clear current previews
-                previewGrid.innerHTML = '';
-                
-                if (images.length === 0) {
-                    previewGrid.innerHTML = '<p id="noImages">No images uploaded yet. Upload some images to see them here.</p>';
-                    return;
+                if (result.success) {
+                    images = result.data || [];
+                    updateStatistics();
+                    renderGallery();
+                    updateLastUpdated();
+                } else {
+                    throw new Error(result.message || 'Failed to load images');
                 }
-                
-                // Display images from server
-                images.forEach(image => {
-                    const imageCard = document.createElement('div');
-                    imageCard.className = 'image-card';
-                    
-                    const img = document.createElement('img');
-                    img.src = image.url || `data:${image.contentType};base64,${image.data}`;
-                    img.alt = image.filename || 'Uploaded image';
-                    
-                    const info = document.createElement('div');
-                    info.className = 'image-info';
-                    info.innerHTML = `
-                        <strong>${image.filename || 'Image'}</strong><br>
-                        <small>${formatFileSize(image.size || 0)}</small><br>
-                        <small>${new Date(image.uploadDate).toLocaleDateString()}</small>
-                    `;
-                    
-                    imageCard.appendChild(img);
-                    imageCard.appendChild(info);
-                    previewGrid.appendChild(imageCard);
-                });
                 
             } catch (error) {
                 console.error('Error loading images:', error);
-                showStatus('Error loading images from server', 'error');
+                showError('Failed to load images: ' + error.message);
             }
         }
         
-        // Show status message
-        function showStatus(message, type) {
-            statusMessage.textContent = message;
-            statusMessage.className = `status-message status-${type}`;
-            statusMessage.style.display = 'block';
+        // Update statistics
+        function updateStatistics() {
+            totalImagesEl.textContent = images.length;
             
-            // Auto-hide success messages after 3 seconds
-            if (type === 'success') {
-                setTimeout(() => {
-                    statusMessage.style.display = 'none';
-                }, 3000);
+            const androidCount = images.filter(img => 
+                img.source && img.source.toLowerCase().includes('android')
+            ).length;
+            
+            androidImagesEl.textContent = androidCount;
+        }
+        
+        // Update last updated time
+        function updateLastUpdated() {
+            lastUpdateTime = new Date();
+            const timeStr = lastUpdateTime.toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            lastUpdatedEl.textContent = timeStr;
+        }
+        
+        // Render gallery
+        function renderGallery() {
+            if (images.length === 0) {
+                galleryGrid.innerHTML = `
+                    <div class="no-images">
+                        <i class="fas fa-image"></i>
+                        <h3>No Images Yet</h3>
+                        <p>Upload images from Android Studio to see them here</p>
+                    </div>
+                `;
+                return;
             }
+            
+            galleryGrid.innerHTML = '';
+            
+            images.forEach(image => {
+                const imageCard = document.createElement('div');
+                imageCard.className = 'image-card';
+                
+                // Determine source badge
+                const sourceClass = image.source && image.source.toLowerCase().includes('android') 
+                    ? 'source-android' 
+                    : 'source-web';
+                
+                const sourceText = image.source && image.source.toLowerCase().includes('android') 
+                    ? 'Android' 
+                    : 'Web';
+                
+                // Format file size
+                const sizeFormatted = formatFileSize(image.size);
+                
+                // Format date
+                const uploadDate = new Date(image.uploadDate);
+                const dateFormatted = uploadDate.toLocaleDateString();
+                
+                imageCard.innerHTML = `
+                    <img src="${image.fullUrl || image.url}" 
+                         alt="${image.originalName || 'Image'}" 
+                         class="image-preview"
+                         onerror="this.src='https://via.placeholder.com/200x150?text=Image+Error'">
+                    <div class="image-info">
+                        <div class="image-name" title="${image.originalName || 'Image'}">
+                            ${image.originalName || 'Image'}
+                        </div>
+                        <div class="image-details">
+                            <span>${sizeFormatted}</span>
+                            <span>${dateFormatted}</span>
+                        </div>
+                        <div class="image-source ${sourceClass}">
+                            ${sourceText}
+                        </div>
+                    </div>
+                `;
+                
+                galleryGrid.appendChild(imageCard);
+            });
+        }
+        
+        // Show loading state
+        function showLoading() {
+            galleryGrid.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading images from server...</p>
+                </div>
+            `;
+        }
+        
+        // Show error state
+        function showError(message) {
+            galleryGrid.innerHTML = `
+                <div class="no-images">
+                    <i class="fas fa-exclamation-triangle" style="color: #ff6b6b;"></i>
+                    <h3>Error Loading Images</h3>
+                    <p>${message}</p>
+                </div>
+            `;
         }
         
         // Format file size
@@ -528,13 +617,52 @@
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
         
-        // Initialize: Load existing images on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            loadImagesFromServer();
+        // Setup auto-refresh
+        function setupAutoRefresh() {
+            // Clear existing interval
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+            
+            // Set new interval (30 seconds)
+            autoRefreshInterval = setInterval(() => {
+                loadImages();
+            }, 30000);
+        }
+        
+        // Refresh button click
+        refreshBtn.addEventListener('click', () => {
+            // Add visual feedback
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            
+            // Load images
+            loadImages().finally(() => {
+                // Restore button state after a short delay
+                setTimeout(() => {
+                    refreshBtn.disabled = false;
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Images';
+                }, 1000);
+            });
         });
+        
+        // Add keyboard shortcut (Ctrl+R or Cmd+R)
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                e.preventDefault();
+                refreshBtn.click();
+            }
+        });
+        
+        // Handle image loading errors
+        document.addEventListener('error', function(e) {
+            if (e.target.tagName === 'IMG' && e.target.classList.contains('image-preview')) {
+                e.target.src = 'https://via.placeholder.com/200x150?text=Image+Error';
+            }
+        }, true);
     </script>
 </body>
 </html>
