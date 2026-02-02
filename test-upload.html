@@ -440,10 +440,10 @@
     </div>
 
     <script>
-        // API endpoints
+        // API endpoints - 根据您的服务器设置调整
         const API_BASE = window.location.origin;
-        const GET_IMAGES_API = '/api/test/images';
         const HEALTH_API = '/api/health';
+        const GET_IMAGES_API = '/api/test/images';  // 这个端点需要确保存在
         
         // DOM elements
         const galleryGrid = document.getElementById('galleryGrid');
@@ -460,52 +460,129 @@
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing test page...');
+            console.log('API Base:', API_BASE);
+            console.log('Health API:', HEALTH_API);
+            console.log('Get Images API:', GET_IMAGES_API);
+            
             checkApiHealth();
             loadImages();
             setupAutoRefresh();
         });
         
-        // Check API health
+        // Check API health - 修改为更简单的检查
         async function checkApiHealth() {
             try {
-                const response = await fetch(HEALTH_API);
+                console.log('Checking API health at:', HEALTH_API);
+                const response = await fetch(HEALTH_API, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors'
+                });
+                
+                console.log('Health check response status:', response.status);
+                
                 if (response.ok) {
+                    const data = await response.json();
+                    console.log('Health check data:', data);
                     apiStatus.className = 'status-badge status-connected';
                     apiStatus.innerHTML = '<i class="fas fa-check-circle"></i> API Connected';
                 } else {
-                    throw new Error('API not responding');
+                    throw new Error(`API returned status: ${response.status}`);
                 }
             } catch (error) {
+                console.error('Health check error:', error);
                 apiStatus.className = 'status-badge status-disconnected';
-                apiStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i> API Disconnected';
+                apiStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i> API Disconnected: ' + error.message;
+                
+                // 尝试备用的健康检查端点
+                tryFallbackHealthCheck();
             }
         }
         
-        // Load images from server
+        // 尝试备用的健康检查端点
+        async function tryFallbackHealthCheck() {
+            try {
+                console.log('Trying fallback health check at /api/test');
+                const response = await fetch('/api/test', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Fallback health check successful:', data);
+                    apiStatus.className = 'status-badge status-connected';
+                    apiStatus.innerHTML = '<i class="fas fa-check-circle"></i> API Connected (Fallback)';
+                    return true;
+                }
+            } catch (error) {
+                console.error('Fallback health check also failed:', error);
+            }
+            return false;
+        }
+        
+        // Load images from server - 修改为更简单的获取方式
         async function loadImages() {
             try {
                 showLoading();
                 
-                const response = await fetch(GET_IMAGES_API);
+                console.log('Loading images from:', GET_IMAGES_API);
+                
+                // 首先尝试使用新的API端点
+                let response = await fetch(GET_IMAGES_API, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                // 如果404，尝试备用的端点
+                if (response.status === 404) {
+                    console.log('Primary images endpoint not found, trying /api/posts');
+                    response = await fetch('/api/posts', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                }
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 const result = await response.json();
+                console.log('Images API response:', result);
                 
-                if (result.success) {
-                    images = result.data || [];
-                    updateStatistics();
-                    renderGallery();
-                    updateLastUpdated();
+                // 处理不同的响应格式
+                if (result.success && Array.isArray(result.data)) {
+                    // 格式1: {success: true, data: [...]}
+                    images = result.data;
+                } else if (Array.isArray(result)) {
+                    // 格式2: 直接返回数组
+                    images = result;
+                } else if (result.success && Array.isArray(result.posts)) {
+                    // 格式3: {success: true, posts: [...]}
+                    images = result.posts;
                 } else {
-                    throw new Error(result.message || 'Failed to load images');
+                    // 默认格式
+                    images = result.data || result.images || [];
                 }
+                
+                console.log('Processed images:', images.length);
+                updateStatistics();
+                renderGallery();
+                updateLastUpdated();
                 
             } catch (error) {
                 console.error('Error loading images:', error);
-                showError('Failed to load images: ' + error.message);
+                showError('Failed to load images: ' + error.message + '. Please check server connection.');
             }
         }
         
@@ -513,9 +590,11 @@
         function updateStatistics() {
             totalImagesEl.textContent = images.length;
             
-            const androidCount = images.filter(img => 
-                img.source && img.source.toLowerCase().includes('android')
-            ).length;
+            const androidCount = images.filter(img => {
+                // 检查不同的字段名称
+                const source = img.source || img.uploadSource || img.device || '';
+                return source.toLowerCase().includes('android');
+            }).length;
             
             androidImagesEl.textContent = androidCount;
         }
@@ -525,12 +604,13 @@
             lastUpdateTime = new Date();
             const timeStr = lastUpdateTime.toLocaleTimeString([], { 
                 hour: '2-digit', 
-                minute: '2-digit' 
+                minute: '2-digit',
+                second: '2-digit'
             });
             lastUpdatedEl.textContent = timeStr;
         }
         
-        // Render gallery
+        // Render gallery - 修改为更灵活的图像URL处理
         function renderGallery() {
             if (images.length === 0) {
                 galleryGrid.innerHTML = `
@@ -538,6 +618,7 @@
                         <i class="fas fa-image"></i>
                         <h3>No Images Yet</h3>
                         <p>Upload images from Android Studio to see them here</p>
+                        <p><small>Or check if the API endpoint is correctly configured</small></p>
                     </div>
                 `;
                 return;
@@ -545,38 +626,71 @@
             
             galleryGrid.innerHTML = '';
             
-            images.forEach(image => {
+            images.forEach((image, index) => {
                 const imageCard = document.createElement('div');
                 imageCard.className = 'image-card';
                 
+                // 获取图像URL - 处理不同的字段名称
+                let imageUrl = '';
+                if (image.fullUrl) {
+                    imageUrl = image.fullUrl;
+                } else if (image.url) {
+                    imageUrl = image.url.startsWith('http') ? image.url : API_BASE + image.url;
+                } else if (image.imageUrl) {
+                    imageUrl = image.imageUrl.startsWith('http') ? image.imageUrl : API_BASE + image.imageUrl;
+                } else if (image.filePath) {
+                    imageUrl = image.filePath.startsWith('http') ? image.filePath : API_BASE + image.filePath;
+                }
+                
+                // 获取原始文件名
+                const originalName = image.originalName || image.filename || image.name || `Image ${index + 1}`;
+                
+                // 获取来源
+                const source = image.source || image.uploadSource || image.device || 'unknown';
+                
                 // Determine source badge
-                const sourceClass = image.source && image.source.toLowerCase().includes('android') 
+                const sourceClass = source.toLowerCase().includes('android') 
                     ? 'source-android' 
                     : 'source-web';
                 
-                const sourceText = image.source && image.source.toLowerCase().includes('android') 
+                const sourceText = source.toLowerCase().includes('android') 
                     ? 'Android' 
                     : 'Web';
                 
                 // Format file size
-                const sizeFormatted = formatFileSize(image.size);
+                const size = image.size || image.fileSize || 0;
+                const sizeFormatted = formatFileSize(size);
                 
                 // Format date
-                const uploadDate = new Date(image.uploadDate);
+                let uploadDate;
+                if (image.uploadDate) {
+                    uploadDate = new Date(image.uploadDate);
+                } else if (image.createdAt) {
+                    uploadDate = new Date(image.createdAt);
+                } else if (image.timestamp) {
+                    uploadDate = new Date(image.timestamp);
+                } else {
+                    uploadDate = new Date();
+                }
+                
                 const dateFormatted = uploadDate.toLocaleDateString();
+                const timeFormatted = uploadDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
                 
                 imageCard.innerHTML = `
-                    <img src="${image.fullUrl || image.url}" 
-                         alt="${image.originalName || 'Image'}" 
+                    <img src="${imageUrl}" 
+                         alt="${originalName}" 
                          class="image-preview"
-                         onerror="this.src='https://via.placeholder.com/200x150?text=Image+Error'">
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/200x150?text=Image+Not+Found'">
                     <div class="image-info">
-                        <div class="image-name" title="${image.originalName || 'Image'}">
-                            ${image.originalName || 'Image'}
+                        <div class="image-name" title="${originalName}">
+                            ${originalName.length > 20 ? originalName.substring(0, 20) + '...' : originalName}
                         </div>
                         <div class="image-details">
                             <span>${sizeFormatted}</span>
                             <span>${dateFormatted}</span>
+                        </div>
+                        <div style="font-size: 0.7rem; color: #888; margin-bottom: 5px;">
+                            ${timeFormatted}
                         </div>
                         <div class="image-source ${sourceClass}">
                             ${sourceText}
@@ -594,6 +708,7 @@
                 <div class="loading">
                     <div class="loading-spinner"></div>
                     <p>Loading images from server...</p>
+                    <p><small>If this takes too long, check the browser console for errors</small></p>
                 </div>
             `;
         }
@@ -605,13 +720,19 @@
                     <i class="fas fa-exclamation-triangle" style="color: #ff6b6b;"></i>
                     <h3>Error Loading Images</h3>
                     <p>${message}</p>
+                    <p><small>Please check:</small></p>
+                    <ul style="text-align: left; margin: 10px 0; padding-left: 20px;">
+                        <li>Is the server running?</li>
+                        <li>Are API endpoints correctly configured?</li>
+                        <li>Check browser console for detailed errors</li>
+                    </ul>
                 </div>
             `;
         }
         
         // Format file size
         function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
+            if (!bytes || bytes === 0) return '0 Bytes';
             
             const k = 1024;
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -629,6 +750,7 @@
             
             // Set new interval (30 seconds)
             autoRefreshInterval = setInterval(() => {
+                console.log('Auto-refreshing images...');
                 loadImages();
             }, 30000);
         }
