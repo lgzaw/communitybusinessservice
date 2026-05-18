@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Manager – Multi‑Business CRUD (Server JSON)</title>
+    <style>
+        * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
+        body { background: #0f172a; margin: 0; padding: 20px; color: #e2e8f0; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1, h2 { color: #facc15; }
+        .toolbar { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; background: #1e293b; padding: 1rem; border-radius: 24px; }
+        button { background: #facc15; color: #0f172a; border: none; padding: 8px 20px; border-radius: 40px; font-weight: bold; cursor: pointer; margin-right: 8px; }
+        button.danger { background: #ef4444; color: white; }
+        button.secondary { background: #334155; color: white; }
+        .business-selector { background: #1e293b; border-radius: 24px; padding: 1rem; margin-bottom: 1rem; }
+        .business-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+        .business-tag { background: #facc15; color: #0f172a; padding: 6px 12px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        .business-tag.active { background: #3b82f6; color: white; }
+        .edit-area { background: #1e293b; border-radius: 24px; padding: 1rem; margin-top: 1rem; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 0.85rem; }
+        input, textarea, select { width: 100%; padding: 8px 12px; border-radius: 20px; border: none; background: #0f172a; color: white; }
+        .section-card { background: #0f172a; border-radius: 20px; padding: 1rem; margin-top: 1rem; }
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .card-item { background: #334155; border-radius: 16px; padding: 0.8rem; }
+        .status { position: fixed; bottom: 20px; right: 20px; background: #22c55e; color: black; padding: 8px 16px; border-radius: 40px; font-weight: bold; transition: 0.2s; opacity: 0; }
+        .modal { position: fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000; }
+        .modal-content { background:#1e293b; padding:2rem; border-radius:32px; max-width:90%; max-height:80%; overflow:auto; }
+        .loading { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; z-index: 2000; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🗄️ Database Manager (Direct JSON File Editing)</h1>
+    <div class="toolbar">
+        <button id="newBusinessBtn">➕ New Business</button>
+        <button id="saveToServerBtn">💾 Save ALL to Server (database.json & index.json)</button>
+        <button id="refreshFromServerBtn">🔄 Refresh from Server</button>
+        <button id="displayDBBtn">📋 Display Database & Index Tables</button>
+    </div>
+
+    <div class="business-selector">
+        <strong>📌 Select Business to Edit</strong>
+        <div id="businessList" class="business-list"></div>
+    </div>
+
+    <div id="businessEditor" style="display:none;">
+        <div class="edit-area">
+            <h2>🏢 Business & Owner Info</h2>
+            <div class="form-row">
+                <div><label>Business Name *</label><input type="text" id="bizName"></div>
+                <div><label>URL Slug (unique) *</label><input type="text" id="bizSlug"></div>
+                <div><label>Business Address</label><input type="text" id="bizAddress"></div>
+                <div><label>Phone (will be formatted)</label><input type="tel" id="bizPhone" placeholder="1234567890 or 1234567"></div>
+                <div><label>Email *</label><input type="email" id="bizEmail"></div>
+                <div><label>Owner First Name</label><input type="text" id="ownerFirst"></div>
+                <div><label>Owner Last Name</label><input type="text" id="ownerLast"></div>
+                <div><label>Owner Phone</label><input type="tel" id="ownerPhone"></div>
+                <div><label>Username (login)</label><input type="text" id="ownerUsername"></div>
+                <div><label>Password</label><input type="password" id="ownerPassword"></div>
+                <div><label>Payment Methods</label><input type="text" id="paymentMethod" placeholder="cash, card"></div>
+                <div><label>Account Valid</label><select id="validCheck"><option value="true">Active</option><option value="false">Disabled</option></select></div>
+            </div>
+            <div class="form-row">
+                <div><label>Header Background Image URL</label><input type="text" id="headerBg" placeholder="https://..."></div>
+                <div><label>Body Background Image URL</label><input type="text" id="bodyBg" placeholder="https://..."></div>
+                <div><label>Map Image URL</label><input type="text" id="mapImage" placeholder="https://..."></div>
+                <div><label>QR Image URL</label><input type="text" id="qrImage" placeholder="https://..."></div>
+            </div>
+            <button id="saveBusinessBtn">💾 Save Business Info (local)</button>
+        </div>
+
+        <!-- Categories -->
+        <div class="section-card">
+            <h2>📂 Categories</h2>
+            <div class="form-row">
+                <input type="text" id="newCatName" placeholder="New category name">
+                <button id="addCategoryBtn">➕ Add Category</button>
+            </div>
+            <div id="categoriesList"></div>
+        </div>
+
+        <!-- Cards (Items) -->
+        <div class="section-card">
+            <h2>📦 Products / Cards</h2>
+            <div id="cardForm">
+                <div class="form-row">
+                    <select id="cardCategorySelect"></select>
+                    <input type="text" id="cardProductName" placeholder="Product name">
+                    <textarea id="cardDesc" placeholder="Description" rows="2"></textarea>
+                    <div><label>Price & Unit</label><input type="text" id="cardPrice" placeholder="$4.99 / each"></div>
+                    <input type="text" id="cardImageUrl" placeholder="Image URL (external)">
+                    <input type="text" id="cardVideoUrl" placeholder="YouTube URL">
+                    <label><input type="checkbox" id="cardDefaultDisplay"> Featured (default display)</label>
+                    <button id="addCardBtn">➕ Add Card</button>
+                </div>
+            </div>
+            <div id="cardsList"></div>
+        </div>
+
+        <!-- Images & Videos (URL lists) -->
+        <div class="section-card">
+            <h2>🖼️ Images (URLs)</h2>
+            <div class="form-row"><input type="text" id="newImageUrl" placeholder="Image URL"><button id="addImageBtn">Add Image URL</button></div>
+            <div id="imagesList" class="items-grid"></div>
+        </div>
+        <div class="section-card">
+            <h2>🎥 Videos (YouTube URLs only)</h2>
+            <div class="form-row"><input type="text" id="newVideoUrl" placeholder="YouTube URL"><button id="addVideoBtn">Add Video URL</button></div>
+            <div id="videosList" class="items-grid"></div>
+        </div>
+    </div>
+</div>
+<div id="statusMsg" class="status">✓ Saved</div>
+
+<script>
+    // ---------- DATABASE STRUCTURE ----------
+    let db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
+    let index = []; // { businessId, businessName, slug }
+    let currentBizId = null;
+
+    function generateId(prefix) { return prefix + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8); }
+
+    function formatPhone(input) {
+        let digits = input.replace(/\D/g, '');
+        if (digits.length === 10) return digits.slice(0,3) + ' ' + digits.slice(3,6) + ' ' + digits.slice(6);
+        if (digits.length === 7) return digits.slice(0,3) + ' ' + digits.slice(3);
+        return input;
+    }
+
+    function validateEmail(email) { return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email); }
+    function validateYouTubeUrl(url) { return url.includes('youtube.com/watch?v=') || url.includes('youtu.be/'); }
+
+    async function loadFromServer() {
+        showLoading(true);
+        try {
+            // Load index.json
+            const indexResp = await fetch('index.json?t=' + Date.now());
+            if (indexResp.ok) index = await indexResp.json();
+            else index = [];
+            // Load database.json
+            const dbResp = await fetch('database.json?t=' + Date.now());
+            if (dbResp.ok) db = await dbResp.json();
+            else db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
+        } catch(e) { console.error(e); index = []; db = { businesses: [], categories: [], cards: [], images: [], videos: [] }; }
+        // Ensure all arrays exist
+        if (!db.businesses) db.businesses = [];
+        if (!db.categories) db.categories = [];
+        if (!db.cards) db.cards = [];
+        if (!db.images) db.images = [];
+        if (!db.videos) db.videos = [];
+        renderBusinessList();
+        if (currentBizId && db.businesses.find(b => b.bizId === currentBizId)) renderBusinessEditor();
+        else if (db.businesses.length) { currentBizId = db.businesses[0].bizId; renderBusinessEditor(); }
+        else document.getElementById('businessEditor').style.display = 'none';
+        showLoading(false);
+        showStatus('Loaded from server');
+    }
+
+    async function saveToServer() {
+        showLoading(true);
+        try {
+            // Update index from db.businesses
+            index = db.businesses.map(b => ({ businessId: b.bizId, businessName: b.bizName, slug: b.slug }));
+            const payload = { database: db, index: index };
+            const resp = await fetch('save_json.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await resp.json();
+            if (result.success) showStatus('Saved to server successfully');
+            else alert('Error saving: ' + result.error);
+        } catch(e) { alert('Network error: ' + e.message); }
+        showLoading(false);
+    }
+
+    function showLoading(show) {
+        let loader = document.getElementById('globalLoader');
+        if (!loader && show) {
+            loader = document.createElement('div'); loader.id = 'globalLoader'; loader.className = 'loading'; loader.innerText = 'Loading/Saving...'; document.body.appendChild(loader);
+        } else if (loader && !show) loader.remove();
+    }
+
+    function showStatus(msg) { const el = document.getElementById('statusMsg'); el.textContent = msg; el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 1500); }
+
+    function renderBusinessList() {
+        const container = document.getElementById('businessList');
+        container.innerHTML = '';
+        index.forEach(biz => {
+            const tag = document.createElement('div');
+            tag.className = 'business-tag' + (currentBizId === biz.businessId ? ' active' : '');
+            tag.textContent = biz.businessName;
+            tag.onclick = () => { currentBizId = biz.businessId; renderBusinessList(); renderBusinessEditor(); };
+            container.appendChild(tag);
+        });
+        if (index.length === 0) container.innerHTML = '<i>No businesses. Click "New Business".</i>';
+    }
+
+    function renderBusinessEditor() {
+        const biz = db.businesses.find(b => b.bizId === currentBizId);
+        if (!biz) { document.getElementById('businessEditor').style.display = 'none'; return; }
+        document.getElementById('businessEditor').style.display = 'block';
+        document.getElementById('bizName').value = biz.bizName || '';
+        document.getElementById('bizSlug').value = biz.slug || '';
+        document.getElementById('bizAddress').value = biz.address || '';
+        document.getElementById('bizPhone').value = biz.phone || '';
+        document.getElementById('bizEmail').value = biz.email || '';
+        document.getElementById('ownerFirst').value = biz.ownerFirst || '';
+        document.getElementById('ownerLast').value = biz.ownerLast || '';
+        document.getElementById('ownerPhone').value = biz.ownerPhone || '';
+        document.getElementById('ownerUsername').value = biz.username || '';
+        document.getElementById('ownerPassword').value = biz.password || '';
+        document.getElementById('paymentMethod').value = biz.paymentMethod || '';
+        document.getElementById('validCheck').value = biz.validCheck ? 'true' : 'false';
+        document.getElementById('headerBg').value = biz.headerBgImage || '';
+        document.getElementById('bodyBg').value = biz.bodyBgImage || '';
+        document.getElementById('mapImage').value = biz.mapImage || '';
+        document.getElementById('qrImage').value = biz.qrImage || '';
+        renderCategories();
+        renderCards();
+        renderImages();
+        renderVideos();
+    }
+
+    function renderCategories() {
+        const bizCats = db.categories.filter(c => c.bizId === currentBizId);
+        const container = document.getElementById('categoriesList');
+        container.innerHTML = '';
+        bizCats.forEach(cat => {
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:8px;';
+            div.innerHTML = `<input type="text" class="catNameInput" data-id="${cat.categoryId}" value="${escapeHtml(cat.categoryName)}" style="flex:1;"><button class="deleteCatBtn" data-id="${cat.categoryId}">Delete</button>`;
+            container.appendChild(div);
+        });
+        document.querySelectorAll('.catNameInput').forEach(inp => inp.addEventListener('change', () => {
+            const catId = inp.getAttribute('data-id'); const newName = inp.value.trim();
+            const cat = db.categories.find(c => c.categoryId === catId);
+            if (cat && newName) cat.categoryName = newName;
+            saveToLocalAndRender();
+        }));
+        document.querySelectorAll('.deleteCatBtn').forEach(btn => btn.addEventListener('click', () => {
+            const catId = btn.getAttribute('data-id');
+            if (confirm('Delete category and all its cards?')) {
+                db.categories = db.categories.filter(c => c.categoryId !== catId);
+                db.cards = db.cards.filter(c => c.categoryId !== catId);
+                saveToLocalAndRender();
+            }
+        }));
+    }
+
+    function renderCards() {
+        const bizCards = db.cards.filter(c => c.bizId === currentBizId);
+        const container = document.getElementById('cardsList');
+        container.innerHTML = '';
+        const catSelect = document.getElementById('cardCategorySelect');
+        const bizCats = db.categories.filter(c => c.bizId === currentBizId);
+        catSelect.innerHTML = bizCats.map(cat => `<option value="${cat.categoryId}">${escapeHtml(cat.categoryName)}</option>`).join('');
+        // Image/Video select dropdowns (optional)
+        const imgSelect = document.getElementById('cardImageSelect');
+        const bizImages = db.images.filter(i => i.bizId === currentBizId);
+        if(imgSelect) imgSelect.innerHTML = '<option value="">No Image</option>' + bizImages.map(img => `<option value="${img.imageId}">${escapeHtml(img.imageName)}</option>`).join('');
+        const vidSelect = document.getElementById('cardVideoSelect');
+        const bizVideos = db.videos.filter(v => v.bizId === currentBizId);
+        if(vidSelect) vidSelect.innerHTML = '<option value="">No Video</option>' + bizVideos.map(vid => `<option value="${vid.videoId}">${escapeHtml(vid.videoName)}</option>`).join('');
+
+        bizCards.forEach(card => {
+            const cat = db.categories.find(c => c.categoryId === card.categoryId);
+            const div = document.createElement('div'); div.className = 'card-item';
+            div.innerHTML = `<strong>${escapeHtml(card.productName)}</strong> (${cat ? cat.categoryName : '?'})<br><small>${escapeHtml(card.description)}</small><br>Price: ${escapeHtml(card.price)} | Featured: ${card.defaultDisplay ? 'Yes' : 'No'}<br><button class="editCardBtn" data-id="${card.cardId}">Edit</button> <button class="deleteCardBtn" data-id="${card.cardId}">Delete</button>`;
+            container.appendChild(div);
+        });
+        document.querySelectorAll('.editCardBtn').forEach(btn => btn.addEventListener('click', () => {
+            const card = db.cards.find(c => c.cardId === btn.getAttribute('data-id'));
+            if (card) {
+                const newName = prompt('Product name', card.productName); if (newName) card.productName = newName;
+                const newDesc = prompt('Description', card.description); if (newDesc !== null) card.description = newDesc;
+                const newPrice = prompt('Price', card.price); if (newPrice !== null) card.price = newPrice;
+                saveToLocalAndRender();
+            }
+        }));
+        document.querySelectorAll('.deleteCardBtn').forEach(btn => btn.addEventListener('click', () => {
+            if (confirm('Delete this card?')) {
+                db.cards = db.cards.filter(c => c.cardId !== btn.getAttribute('data-id'));
+                saveToLocalAndRender();
+            }
+        }));
+    }
+
+    function renderImages() {
+        const bizImages = db.images.filter(i => i.bizId === currentBizId);
+        const container = document.getElementById('imagesList');
+        container.innerHTML = '';
+        bizImages.forEach(img => {
+            const div = document.createElement('div'); div.className = 'card-item';
+            div.innerHTML = `<img src="${escapeHtml(img.imageData)}" style="width:100%; height:100px; object-fit:cover;"><br><strong>${escapeHtml(img.imageName)}</strong><br><small>ID: ${img.imageId}</small><br><button class="deleteImageBtn" data-id="${img.imageId}">Delete</button>`;
+            container.appendChild(div);
+        });
+        document.querySelectorAll('.deleteImageBtn').forEach(btn => btn.addEventListener('click', () => {
+            const imgId = btn.getAttribute('data-id');
+            if (confirm('Delete image?')) {
+                db.images = db.images.filter(i => i.imageId !== imgId);
+                db.cards.forEach(c => { if (c.imageId === imgId) c.imageId = ''; });
+                saveToLocalAndRender();
+            }
+        }));
+    }
+
+    function renderVideos() {
+        const bizVideos = db.videos.filter(v => v.bizId === currentBizId);
+        const container = document.getElementById('videosList');
+        container.innerHTML = '';
+        bizVideos.forEach(vid => {
+            const div = document.createElement('div'); div.className = 'card-item';
+            div.innerHTML = `<iframe width="100%" height="100" src="https://www.youtube.com/embed/${extractYouTubeId(vid.videoData)}" frameborder="0"></iframe><br><strong>${escapeHtml(vid.videoName)}</strong><br><button class="deleteVideoBtn" data-id="${vid.videoId}">Delete</button>`;
+            container.appendChild(div);
+        });
+        document.querySelectorAll('.deleteVideoBtn').forEach(btn => btn.addEventListener('click', () => {
+            const vidId = btn.getAttribute('data-id');
+            if (confirm('Delete video?')) {
+                db.videos = db.videos.filter(v => v.videoId !== vidId);
+                db.cards.forEach(c => { if (c.videoId === vidId) c.videoId = ''; });
+                saveToLocalAndRender();
+            }
+        }));
+    }
+
+    function extractYouTubeId(url) {
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
+        return match ? match[1] : '';
+    }
+
+    function saveBusinessFromUI() {
+        const biz = db.businesses.find(b => b.bizId === currentBizId);
+        if (!biz) return;
+        const newSlug = document.getElementById('bizSlug').value.trim();
+        if (newSlug && index.some(i => i.slug === newSlug && i.businessId !== currentBizId)) {
+            alert('Slug already used by another business');
+            return;
+        }
+        let phoneVal = formatPhone(document.getElementById('bizPhone').value);
+        const emailVal = document.getElementById('bizEmail').value.trim();
+        if (emailVal && !validateEmail(emailVal)) { alert('Invalid email'); return; }
+        biz.bizName = document.getElementById('bizName').value.trim() || 'Unnamed';
+        biz.slug = newSlug || biz.bizName.toLowerCase().replace(/\s/g, '');
+        biz.address = document.getElementById('bizAddress').value;
+        biz.phone = phoneVal;
+        biz.email = emailVal;
+        biz.ownerFirst = document.getElementById('ownerFirst').value;
+        biz.ownerLast = document.getElementById('ownerLast').value;
+        biz.ownerPhone = formatPhone(document.getElementById('ownerPhone').value);
+        biz.username = document.getElementById('ownerUsername').value;
+        biz.password = document.getElementById('ownerPassword').value;
+        biz.paymentMethod = document.getElementById('paymentMethod').value;
+        biz.validCheck = document.getElementById('validCheck').value === 'true';
+        biz.headerBgImage = document.getElementById('headerBg').value;
+        biz.bodyBgImage = document.getElementById('bodyBg').value;
+        biz.mapImage = document.getElementById('mapImage').value;
+        biz.qrImage = document.getElementById('qrImage').value;
+        saveToLocalAndRender();
+    }
+
+    function addNewBusiness() {
+        const newId = generateId('biz');
+        db.businesses.push({
+            bizId: newId, bizName: "New Business", slug: "new" + Date.now(), address: "", phone: "", email: "",
+            ownerFirst: "", ownerLast: "", ownerPhone: "", username: "", password: "", paymentMethod: "",
+            validCheck: true, headerBgImage: "", bodyBgImage: "", mapImage: "", qrImage: ""
+        });
+        saveToLocalAndRender();
+        currentBizId = newId;
+        renderBusinessList();
+        renderBusinessEditor();
+    }
+
+    function saveToLocalAndRender() {
+        // Just update UI and keep in memory; does NOT save to server automatically.
+        // User must click "Save ALL to Server" button.
+        renderBusinessList();
+        renderBusinessEditor();
+        showStatus('Changes saved locally (click "Save to Server" to persist)');
+    }
+
+    // Event listeners
+    document.getElementById('newBusinessBtn').onclick = addNewBusiness;
+    document.getElementById('saveBusinessBtn').onclick = saveBusinessFromUI;
+    document.getElementById('saveToServerBtn').onclick = saveToServer;
+    document.getElementById('refreshFromServerBtn').onclick = loadFromServer;
+
+    document.getElementById('addCategoryBtn').onclick = () => {
+        const catName = document.getElementById('newCatName').value.trim();
+        if (!catName) return;
+        db.categories.push({ categoryId: generateId('cat'), bizId: currentBizId, categoryName: catName });
+        saveToLocalAndRender();
+        document.getElementById('newCatName').value = '';
+    };
+    document.getElementById('addCardBtn').onclick = () => {
+        const categoryId = document.getElementById('cardCategorySelect').value;
+        if (!categoryId) { alert('Select a category'); return; }
+        const productName = document.getElementById('cardProductName').value.trim();
+        if (!productName) return;
+        db.cards.push({
+            cardId: generateId('card'), bizId: currentBizId, categoryId: categoryId,
+            productName: productName, description: document.getElementById('cardDesc').value,
+            price: document.getElementById('cardPrice').value,
+            imageId: document.getElementById('cardImageSelect')?.value || '',
+            videoId: document.getElementById('cardVideoSelect')?.value || '',
+            defaultDisplay: document.getElementById('cardDefaultDisplay').checked
+        });
+        saveToLocalAndRender();
+        document.getElementById('cardProductName').value = '';
+        document.getElementById('cardDesc').value = '';
+        document.getElementById('cardPrice').value = '';
+        document.getElementById('cardDefaultDisplay').checked = false;
+    };
+    document.getElementById('addImageBtn').onclick = () => {
+        const url = document.getElementById('newImageUrl').value.trim();
+        if (!url) return;
+        const newId = generateId('img');
+        db.images.push({ imageId: newId, bizId: currentBizId, imageName: url.split('/').pop() || 'image', imageData: url });
+        saveToLocalAndRender();
+        document.getElementById('newImageUrl').value = '';
+    };
+    document.getElementById('addVideoBtn').onclick = () => {
+        let url = document.getElementById('newVideoUrl').value.trim();
+        if (!validateYouTubeUrl(url)) { alert('Only YouTube URLs allowed'); return; }
+        const newId = generateId('vid');
+        db.videos.push({ videoId: newId, bizId: currentBizId, videoName: url.split('v=')[1] || 'video', videoData: url });
+        saveToLocalAndRender();
+        document.getElementById('newVideoUrl').value = '';
+    };
+
+    // Display Database Tables
+    let displayModal = null;
+    document.getElementById('displayDBBtn').onclick = () => {
+        if (displayModal) displayModal.remove();
+        const modal = document.createElement('div'); modal.className = 'modal';
+        modal.innerHTML = `<div class="modal-content"><h2>Database & Index Tables</h2><button id="closeModalBtn">Close</button><hr><h3>Index.json</h3><pre>${escapeHtml(JSON.stringify(index, null, 2))}</pre><h3>Database.json</h3><pre>${escapeHtml(JSON.stringify(db, null, 2))}</pre></div>`;
+        document.body.appendChild(modal);
+        displayModal = modal;
+        document.getElementById('closeModalBtn').onclick = () => modal.remove();
+    };
+
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+    loadFromServer();
+</script>
+</body>
+</html>

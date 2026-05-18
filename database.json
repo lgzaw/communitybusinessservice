@@ -1,0 +1,134 @@
+{
+    "businesses": [
+        {
+            "bizId": "biz_1734567890123_abc123",
+            "bizName": "Sunny Bakery",
+            "slug": "sunnybakery",
+            "address": "123 Main St",
+            "phone": "123 456 7890",
+            "email": "owner@sunnybakery.com",
+            "ownerFirst": "John",
+            "ownerLast": "Doe",
+            "ownerPhone": "555 123 4567",
+            "username": "sunnyowner",
+            "password": "bakery123",
+            "paymentMethod": "cash, card",
+            "validCheck": true,
+            "headerBgImage": "",
+            "bodyBgImage": "",
+            "mapImage": "",
+            "qrImage": ""
+        },
+        {
+            "bizId": "biz_1778957456099_8kl31a",
+            "bizName": "BlueBerry",
+            "slug": "blueberry",
+            "address": "123 heaven st. ",
+            "phone": "236 456 4563",
+            "email": "info@bluberry.com",
+            "ownerFirst": "Kev",
+            "ownerLast": "Berry",
+            "ownerPhone": "236 456 4563",
+            "username": "blueberryowner",
+            "password": "blueberry123",
+            "paymentMethod": "",
+            "validCheck": true,
+            "headerBgImage": "",
+            "bodyBgImage": "",
+            "mapImage": "",
+            "qrImage": ""
+        }
+    ],
+    "categories": [
+        {
+            "categoryId": "cat_1734567891234_def456",
+            "bizId": "biz_1734567890123_abc123",
+            "categoryName": "Breads"
+        },
+        {
+            "categoryId": "cat_1734567892345_ghi789",
+            "bizId": "biz_1734567890123_abc123",
+            "categoryName": "Pastries"
+        },
+        {
+            "categoryId": "cat_1778957569426_amj8f7",
+            "bizId": "biz_1778957456099_8kl31a",
+            "categoryName": "BC berries"
+        },
+        {
+            "categoryId": "cat_1778958567790_jjby5a",
+            "bizId": "biz_1778957456099_8kl31a",
+            "categoryName": "ON berries"
+        }
+    ],
+    "cards": [
+        {
+            "cardId": "card_1778958555847_0jvg22",
+            "bizId": "biz_1778957456099_8kl31a",
+            "categoryId": "cat_1778957569426_amj8f7",
+            "productName": "big blue berry",
+            "description": "bigger than 5cm",
+            "price": "20.99\/ box",
+            "imageId": "",
+            "videoId": "",
+            "defaultDisplay": true
+        },
+        {
+            "cardId": "card_1778958590365_ujmzxq",
+            "bizId": "biz_1778957456099_8kl31a",
+            "categoryId": "cat_1778958567790_jjby5a",
+            "productName": "big blue berry",
+            "description": "bigger than 5cm",
+            "price": "19.99\/box",
+            "imageId": "",
+            "videoId": "",
+            "defaultDisplay": true
+        },
+        {
+            "cardId": "card_1778961161214_3hkwby",
+            "bizId": "biz_1734567890123_abc123",
+            "categoryId": "cat_1734567891234_def456",
+            "productName": "sourdough",
+            "description": "very sore",
+            "price": "4.99\/each",
+            "imageId": "",
+            "videoId": "",
+            "defaultDisplay": true
+        },
+        {
+            "cardId": "card_1778961177698_ntjrg1",
+            "bizId": "biz_1734567890123_abc123",
+            "categoryId": "cat_1734567891234_def456",
+            "productName": "sweatdough",
+            "description": "very sweat",
+            "price": "4.99\/each",
+            "imageId": "",
+            "videoId": "",
+            "defaultDisplay": true
+        },
+        {
+            "cardId": "card_1778961198885_jfazkp",
+            "bizId": "biz_1734567890123_abc123",
+            "categoryId": "cat_1734567892345_ghi789",
+            "productName": "fresh pasty",
+            "description": "very fresh ",
+            "price": "19.99\/box",
+            "imageId": "",
+            "videoId": "",
+            "defaultDisplay": true
+        },
+        {
+            "cardId": "card_1778961224472_25vim9",
+            "bizId": "biz_1734567890123_abc123",
+            "categoryId": "cat_1734567892345_ghi789",
+            "productName": "italy pastry",
+            "description": "very italian",
+            "price": "18.99\/box",
+            "imageId": "",
+            "videoId": "",
+            "defaultDisplay": true
+        }
+    ],
+    "images": [],
+    "videos": []
+}
