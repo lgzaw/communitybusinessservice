@@ -90,8 +90,9 @@
                     <input type="text" id="cardProductName" placeholder="Product name">
                     <textarea id="cardDesc" placeholder="Description" rows="2"></textarea>
                     <div><label>Price & Unit</label><input type="text" id="cardPrice" placeholder="$4.99 / each"></div>
-                    <input type="text" id="cardImageUrl" placeholder="Image URL (external)">
-                    <input type="text" id="cardVideoUrl" placeholder="YouTube URL">
+                    <!-- Image and Video dropdowns (now present in HTML) -->
+                    <div><label>Image</label><select id="cardImageSelect"></select></div>
+                    <div><label>Video (YouTube)</label><select id="cardVideoSelect"></select></div>
                     <label><input type="checkbox" id="cardDefaultDisplay"> Featured (default display)</label>
                     <button id="addCardBtn">➕ Add Card</button>
                 </div>
@@ -102,7 +103,7 @@
         <!-- Images & Videos (URL lists) -->
         <div class="section-card">
             <h2>🖼️ Images (URLs)</h2>
-            <div class="form-row"><input type="text" id="newImageUrl" placeholder="Image URL"><button id="addImageBtn">Add Image URL</button></div>
+            <div class="form-row"><input type="text" id="newImageUrl" placeholder="Image URL (external)"><button id="addImageBtn">Add Image URL</button></div>
             <div id="imagesList" class="items-grid"></div>
         </div>
         <div class="section-card">
@@ -131,20 +132,18 @@
 
     function validateEmail(email) { return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email); }
     function validateYouTubeUrl(url) { return url.includes('youtube.com/watch?v=') || url.includes('youtu.be/'); }
+    function isValidImageUrl(url) { return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(url) || url.startsWith('http'); }
 
     async function loadFromServer() {
         showLoading(true);
         try {
-            // Load index.json
             const indexResp = await fetch('index.json?t=' + Date.now());
             if (indexResp.ok) index = await indexResp.json();
             else index = [];
-            // Load database.json
             const dbResp = await fetch('database.json?t=' + Date.now());
             if (dbResp.ok) db = await dbResp.json();
             else db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
         } catch(e) { console.error(e); index = []; db = { businesses: [], categories: [], cards: [], images: [], videos: [] }; }
-        // Ensure all arrays exist
         if (!db.businesses) db.businesses = [];
         if (!db.categories) db.categories = [];
         if (!db.cards) db.cards = [];
@@ -161,7 +160,6 @@
     async function saveToServer() {
         showLoading(true);
         try {
-            // Update index from db.businesses
             index = db.businesses.map(b => ({ businessId: b.bizId, businessName: b.bizName, slug: b.slug }));
             const payload = { database: db, index: index };
             const resp = await fetch('save_json.php', {
@@ -169,7 +167,16 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            const result = await resp.json();
+            const text = await resp.text(); // read as text first to debug
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch(e) {
+                console.error('Server returned non-JSON:', text);
+                alert('Server error. Check PHP error logs. Response: ' + text.substring(0, 200));
+                showLoading(false);
+                return;
+            }
             if (result.success) showStatus('Saved to server successfully');
             else alert('Error saving: ' + result.error);
         } catch(e) { alert('Network error: ' + e.message); }
@@ -222,6 +229,20 @@
         renderCards();
         renderImages();
         renderVideos();
+        refreshCardSelects(); // populate image/video dropdowns in card form
+    }
+
+    function refreshCardSelects() {
+        const imgSelect = document.getElementById('cardImageSelect');
+        const vidSelect = document.getElementById('cardVideoSelect');
+        if (imgSelect) {
+            const bizImages = db.images.filter(i => i.bizId === currentBizId);
+            imgSelect.innerHTML = '<option value="">No Image</option>' + bizImages.map(img => `<option value="${img.imageId}">${escapeHtml(img.imageName)}</option>`).join('');
+        }
+        if (vidSelect) {
+            const bizVideos = db.videos.filter(v => v.bizId === currentBizId);
+            vidSelect.innerHTML = '<option value="">No Video</option>' + bizVideos.map(vid => `<option value="${vid.videoId}">${escapeHtml(vid.videoName)}</option>`).join('');
+        }
     }
 
     function renderCategories() {
@@ -257,28 +278,36 @@
         const catSelect = document.getElementById('cardCategorySelect');
         const bizCats = db.categories.filter(c => c.bizId === currentBizId);
         catSelect.innerHTML = bizCats.map(cat => `<option value="${cat.categoryId}">${escapeHtml(cat.categoryName)}</option>`).join('');
-        // Image/Video select dropdowns (optional)
-        const imgSelect = document.getElementById('cardImageSelect');
-        const bizImages = db.images.filter(i => i.bizId === currentBizId);
-        if(imgSelect) imgSelect.innerHTML = '<option value="">No Image</option>' + bizImages.map(img => `<option value="${img.imageId}">${escapeHtml(img.imageName)}</option>`).join('');
-        const vidSelect = document.getElementById('cardVideoSelect');
-        const bizVideos = db.videos.filter(v => v.bizId === currentBizId);
-        if(vidSelect) vidSelect.innerHTML = '<option value="">No Video</option>' + bizVideos.map(vid => `<option value="${vid.videoId}">${escapeHtml(vid.videoName)}</option>`).join('');
 
         bizCards.forEach(card => {
             const cat = db.categories.find(c => c.categoryId === card.categoryId);
             const div = document.createElement('div'); div.className = 'card-item';
-            div.innerHTML = `<strong>${escapeHtml(card.productName)}</strong> (${cat ? cat.categoryName : '?'})<br><small>${escapeHtml(card.description)}</small><br>Price: ${escapeHtml(card.price)} | Featured: ${card.defaultDisplay ? 'Yes' : 'No'}<br><button class="editCardBtn" data-id="${card.cardId}">Edit</button> <button class="deleteCardBtn" data-id="${card.cardId}">Delete</button>`;
+            div.innerHTML = `<strong>${escapeHtml(card.productName)}</strong> (${cat ? cat.categoryName : '?'})<br><small>${escapeHtml(card.description)}</small><br>Price: ${escapeHtml(card.price)} | Featured: ${card.defaultDisplay ? 'Yes' : 'No'}<br>
+                            <button class="editCardBtn" data-id="${card.cardId}">Edit</button> 
+                            <button class="deleteCardBtn" data-id="${card.cardId}">Delete</button>`;
             container.appendChild(div);
         });
+        // Edit button: open a simple modal or prompt for each field (including image/video selection)
         document.querySelectorAll('.editCardBtn').forEach(btn => btn.addEventListener('click', () => {
-            const card = db.cards.find(c => c.cardId === btn.getAttribute('data-id'));
-            if (card) {
-                const newName = prompt('Product name', card.productName); if (newName) card.productName = newName;
-                const newDesc = prompt('Description', card.description); if (newDesc !== null) card.description = newDesc;
-                const newPrice = prompt('Price', card.price); if (newPrice !== null) card.price = newPrice;
-                saveToLocalAndRender();
-            }
+            const cardId = btn.getAttribute('data-id');
+            const card = db.cards.find(c => c.cardId === cardId);
+            if (!card) return;
+            // Use prompts for simplicity, but for image/video we offer dropdowns via a modal? Instead, we can use a series of prompts.
+            const newName = prompt('Product name', card.productName); if (newName) card.productName = newName;
+            const newDesc = prompt('Description', card.description); if (newDesc !== null) card.description = newDesc;
+            const newPrice = prompt('Price', card.price); if (newPrice !== null) card.price = newPrice;
+            // For image and video, we can show a list of available ones via prompt
+            const bizImages = db.images.filter(i => i.bizId === currentBizId);
+            const imageOptions = bizImages.map(img => `${img.imageId} - ${img.imageName}`).join(', ');
+            const newImageId = prompt(`Image ID (available: ${imageOptions || 'none'})`, card.imageId || '');
+            if (newImageId !== null) card.imageId = newImageId;
+            const bizVideos = db.videos.filter(v => v.bizId === currentBizId);
+            const videoOptions = bizVideos.map(vid => `${vid.videoId} - ${vid.videoName}`).join(', ');
+            const newVideoId = prompt(`Video ID (available: ${videoOptions || 'none'})`, card.videoId || '');
+            if (newVideoId !== null) card.videoId = newVideoId;
+            const newDefault = confirm(`Featured? Current: ${card.defaultDisplay ? 'Yes' : 'No'}`);
+            card.defaultDisplay = newDefault;
+            saveToLocalAndRender();
         }));
         document.querySelectorAll('.deleteCardBtn').forEach(btn => btn.addEventListener('click', () => {
             if (confirm('Delete this card?')) {
@@ -294,12 +323,15 @@
         container.innerHTML = '';
         bizImages.forEach(img => {
             const div = document.createElement('div'); div.className = 'card-item';
-            div.innerHTML = `<img src="${escapeHtml(img.imageData)}" style="width:100%; height:100px; object-fit:cover;"><br><strong>${escapeHtml(img.imageName)}</strong><br><small>ID: ${img.imageId}</small><br><button class="deleteImageBtn" data-id="${img.imageId}">Delete</button>`;
+            div.innerHTML = `<img src="${escapeHtml(img.imageData)}" style="width:100%; height:100px; object-fit:cover;" onerror="this.src='https://via.placeholder.com/300x200?text=Invalid+URL'"><br>
+                            <strong>${escapeHtml(img.imageName)}</strong><br>
+                            <small>ID: ${img.imageId}</small><br>
+                            <button class="deleteImageBtn" data-id="${img.imageId}">Delete</button>`;
             container.appendChild(div);
         });
         document.querySelectorAll('.deleteImageBtn').forEach(btn => btn.addEventListener('click', () => {
             const imgId = btn.getAttribute('data-id');
-            if (confirm('Delete image?')) {
+            if (confirm('Delete image? It will be removed from cards.')) {
                 db.images = db.images.filter(i => i.imageId !== imgId);
                 db.cards.forEach(c => { if (c.imageId === imgId) c.imageId = ''; });
                 saveToLocalAndRender();
@@ -313,12 +345,16 @@
         container.innerHTML = '';
         bizVideos.forEach(vid => {
             const div = document.createElement('div'); div.className = 'card-item';
-            div.innerHTML = `<iframe width="100%" height="100" src="https://www.youtube.com/embed/${extractYouTubeId(vid.videoData)}" frameborder="0"></iframe><br><strong>${escapeHtml(vid.videoName)}</strong><br><button class="deleteVideoBtn" data-id="${vid.videoId}">Delete</button>`;
+            const embedUrl = `https://www.youtube.com/embed/${extractYouTubeId(vid.videoData)}`;
+            div.innerHTML = `<iframe width="100%" height="100" src="${embedUrl}" frameborder="0"></iframe><br>
+                            <strong>${escapeHtml(vid.videoName)}</strong><br>
+                            <small>ID: ${vid.videoId}</small><br>
+                            <button class="deleteVideoBtn" data-id="${vid.videoId}">Delete</button>`;
             container.appendChild(div);
         });
         document.querySelectorAll('.deleteVideoBtn').forEach(btn => btn.addEventListener('click', () => {
             const vidId = btn.getAttribute('data-id');
-            if (confirm('Delete video?')) {
+            if (confirm('Delete video? It will be removed from cards.')) {
                 db.videos = db.videos.filter(v => v.videoId !== vidId);
                 db.cards.forEach(c => { if (c.videoId === vidId) c.videoId = ''; });
                 saveToLocalAndRender();
@@ -375,8 +411,6 @@
     }
 
     function saveToLocalAndRender() {
-        // Just update UI and keep in memory; does NOT save to server automatically.
-        // User must click "Save ALL to Server" button.
         renderBusinessList();
         renderBusinessEditor();
         showStatus('Changes saved locally (click "Save to Server" to persist)');
@@ -395,6 +429,7 @@
         saveToLocalAndRender();
         document.getElementById('newCatName').value = '';
     };
+
     document.getElementById('addCardBtn').onclick = () => {
         const categoryId = document.getElementById('cardCategorySelect').value;
         if (!categoryId) { alert('Select a category'); return; }
@@ -404,8 +439,8 @@
             cardId: generateId('card'), bizId: currentBizId, categoryId: categoryId,
             productName: productName, description: document.getElementById('cardDesc').value,
             price: document.getElementById('cardPrice').value,
-            imageId: document.getElementById('cardImageSelect')?.value || '',
-            videoId: document.getElementById('cardVideoSelect')?.value || '',
+            imageId: document.getElementById('cardImageSelect').value,
+            videoId: document.getElementById('cardVideoSelect').value,
             defaultDisplay: document.getElementById('cardDefaultDisplay').checked
         });
         saveToLocalAndRender();
@@ -414,14 +449,26 @@
         document.getElementById('cardPrice').value = '';
         document.getElementById('cardDefaultDisplay').checked = false;
     };
+
     document.getElementById('addImageBtn').onclick = () => {
-        const url = document.getElementById('newImageUrl').value.trim();
+        let url = document.getElementById('newImageUrl').value.trim();
         if (!url) return;
+        // Reject base64 data URLs (they are too long and cause JSON issues)
+        if (url.startsWith('data:image')) {
+            alert('Base64 image data is not allowed. Please use an external image URL (e.g., https://...).');
+            return;
+        }
+        if (!isValidImageUrl(url)) {
+            alert('Please enter a valid image URL (http:// or https://)');
+            return;
+        }
         const newId = generateId('img');
         db.images.push({ imageId: newId, bizId: currentBizId, imageName: url.split('/').pop() || 'image', imageData: url });
         saveToLocalAndRender();
         document.getElementById('newImageUrl').value = '';
+        refreshCardSelects();
     };
+
     document.getElementById('addVideoBtn').onclick = () => {
         let url = document.getElementById('newVideoUrl').value.trim();
         if (!validateYouTubeUrl(url)) { alert('Only YouTube URLs allowed'); return; }
@@ -429,6 +476,7 @@
         db.videos.push({ videoId: newId, bizId: currentBizId, videoName: url.split('v=')[1] || 'video', videoData: url });
         saveToLocalAndRender();
         document.getElementById('newVideoUrl').value = '';
+        refreshCardSelects();
     };
 
     // Display Database Tables
