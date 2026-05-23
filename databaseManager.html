@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database Manager – Full Image/Video Support</title>
+    <title>Database Manager – Multi‑Business (GitHub Pages compatible)</title>
     <style>
         * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
         body { background: #0f172a; margin: 0; padding: 20px; color: #e2e8f0; }
@@ -28,16 +28,22 @@
         .modal { position: fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000; }
         .modal-content { background:#1e293b; padding:2rem; border-radius:32px; max-width:90%; max-height:80%; overflow:auto; }
         .loading { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; z-index: 2000; }
+        .import-zone { margin-top: 10px; padding: 8px; background: #0f172a; border-radius: 20px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>🗄️ Database Manager (Images & Videos as URLs)</h1>
+    <h1>🗄️ Database Manager (Static – Export/Import JSON)</h1>
     <div class="toolbar">
         <button id="newBusinessBtn">➕ New Business</button>
-        <button id="saveToServerBtn">💾 Save ALL to Server (database.json & index.json)</button>
-        <button id="refreshFromServerBtn">🔄 Refresh from Server</button>
-        <button id="displayDBBtn">📋 Display Database & Index Tables</button>
+        <button id="exportAllBtn">💾 Export database.json & index.json</button>
+        <button id="importBtn">📂 Import JSON file (overwrite)</button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none">
+        <button id="refreshFromServerBtn">🔄 Reload from GitHub (raw)</button>
+        <button id="displayDBBtn">📋 Display Current Data</button>
+    </div>
+    <div class="import-zone">
+        <small>⚠️ No PHP – to save changes permanently, export the JSON files and commit them to your GitHub repository manually.</small>
     </div>
 
     <div class="business-selector">
@@ -68,7 +74,7 @@
                 <div><label>Map Image URL</label><input type="text" id="mapImage" placeholder="https://..."></div>
                 <div><label>QR Image URL</label><input type="text" id="qrImage" placeholder="https://..."></div>
             </div>
-            <button id="saveBusinessBtn">💾 Save Business Info (local)</button>
+            <button id="saveBusinessBtn">💾 Save Business Info (local memory)</button>
         </div>
 
         <!-- Categories -->
@@ -103,7 +109,7 @@
         <div class="section-card">
             <h2>🖼️ Images (URLs)</h2>
             <div class="form-row">
-                <input type="text" id="newImageName" placeholder="Image name (e.g., Sourdough)">
+                <input type="text" id="newImageName" placeholder="Image name">
                 <input type="text" id="newImageUrl" placeholder="Image URL (https://...)">
                 <button id="addImageBtn">Add Image</button>
             </div>
@@ -122,7 +128,7 @@
         </div>
     </div>
 </div>
-<div id="statusMsg" class="status">✓ Saved</div>
+<div id="statusMsg" class="status">✓ Saved locally</div>
 
 <script>
     let db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
@@ -144,13 +150,21 @@
     async function loadFromServer() {
         showLoading(true);
         try {
-            const indexResp = await fetch('index.json?t=' + Date.now());
+            // Use relative paths – they will fetch from the same directory as this HTML file
+            // On GitHub Pages, this works because the JSON files are in the same repo.
+            const indexResp = await fetch('index.json?t=' + Date.now(), { cache: 'no-store' });
             if (indexResp.ok) index = await indexResp.json();
             else index = [];
-            const dbResp = await fetch('database.json?t=' + Date.now());
+
+            const dbResp = await fetch('database.json?t=' + Date.now(), { cache: 'no-store' });
             if (dbResp.ok) db = await dbResp.json();
             else db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
-        } catch(e) { console.error(e); index = []; db = { businesses: [], categories: [], cards: [], images: [], videos: [] }; }
+        } catch(e) { 
+            console.error(e); 
+            index = []; 
+            db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
+            alert('Failed to load JSON files. Make sure database.json and index.json exist in the same folder as this HTML file.');
+        }
         if (!db.businesses) db.businesses = [];
         if (!db.categories) db.categories = [];
         if (!db.cards) db.cards = [];
@@ -161,33 +175,21 @@
         else if (db.businesses.length) { currentBizId = db.businesses[0].bizId; renderBusinessEditor(); }
         else document.getElementById('businessEditor').style.display = 'none';
         showLoading(false);
-        showStatus('Loaded from server');
-    }
-
-    async function saveToServer() {
-        showLoading(true);
-        try {
-            index = db.businesses.map(b => ({ businessId: b.bizId, businessName: b.bizName, slug: b.slug }));
-            const payload = { database: db, index: index };
-            const resp = await fetch('save_json.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const result = await resp.json();
-            if (result.success) showStatus('Saved to server successfully');
-            else alert('Error saving: ' + result.error);
-        } catch(e) { alert('Network error: ' + e.message + '\nMake sure PHP server is running and save_json.php is accessible.'); }
-        showLoading(false);
+        showStatus('Loaded from GitHub (static files)');
     }
 
     function showLoading(show) {
         let loader = document.getElementById('globalLoader');
-        if (!loader && show) { loader = document.createElement('div'); loader.id = 'globalLoader'; loader.className = 'loading'; loader.innerText = 'Loading/Saving...'; document.body.appendChild(loader); }
+        if (!loader && show) { loader = document.createElement('div'); loader.id = 'globalLoader'; loader.className = 'loading'; loader.innerText = 'Loading...'; document.body.appendChild(loader); }
         else if (loader && !show) loader.remove();
     }
 
-    function showStatus(msg) { const el = document.getElementById('statusMsg'); el.textContent = msg; el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 1500); }
+    function showStatus(msg) { 
+        const el = document.getElementById('statusMsg'); 
+        el.textContent = msg; 
+        el.style.opacity = '1'; 
+        setTimeout(() => el.style.opacity = '0', 1500); 
+    }
 
     function renderBusinessList() {
         const container = document.getElementById('businessList');
@@ -396,16 +398,72 @@
     }
 
     function saveToLocalAndRender() {
+        // Update index from db.businesses
+        index = db.businesses.map(b => ({ businessId: b.bizId, businessName: b.bizName, slug: b.slug }));
         renderBusinessList();
         renderBusinessEditor();
-        showStatus('Changes saved locally (click "Save to Server" to persist)');
+        showStatus('Changes saved to memory (export to persist)');
+    }
+
+    // Export both JSON files
+    function exportAll() {
+        const dbBlob = new Blob([JSON.stringify(db, null, 2)], {type: 'application/json'});
+        const idxBlob = new Blob([JSON.stringify(index, null, 2)], {type: 'application/json'});
+        const dbUrl = URL.createObjectURL(dbBlob);
+        const idxUrl = URL.createObjectURL(idxBlob);
+        const aDb = document.createElement('a'); aDb.href = dbUrl; aDb.download = 'database.json'; aDb.click();
+        const aIdx = document.createElement('a'); aIdx.href = idxUrl; aIdx.download = 'index.json'; aIdx.click();
+        URL.revokeObjectURL(dbUrl);
+        URL.revokeObjectURL(idxUrl);
+        showStatus('Exported database.json and index.json');
+    }
+
+    // Import a JSON file (overwrites both db and index if it's a full export)
+    function importFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                // Check if it's a combined export (has both database and index) or just one of them
+                if (imported.database && imported.index) {
+                    db = imported.database;
+                    index = imported.index;
+                } else if (imported.businesses && imported.categories && imported.cards) {
+                    // It's a raw database.json
+                    db = imported;
+                    index = db.businesses.map(b => ({ businessId: b.bizId, businessName: b.bizName, slug: b.slug }));
+                } else if (Array.isArray(imported) && imported[0] && imported[0].businessId) {
+                    // It's an index.json
+                    index = imported;
+                    // keep db unchanged
+                } else {
+                    alert('Unrecognized JSON format. Please import a full export (database.json + index.json combined) or a single database.json.');
+                    return;
+                }
+                // Ensure arrays exist
+                if (!db.businesses) db.businesses = [];
+                if (!db.categories) db.categories = [];
+                if (!db.cards) db.cards = [];
+                if (!db.images) db.images = [];
+                if (!db.videos) db.videos = [];
+                currentBizId = db.businesses.length ? db.businesses[0].bizId : null;
+                saveToLocalAndRender();
+                showStatus('Imported successfully. Changes are in memory – export to save to disk.');
+            } catch(err) { alert('Error parsing JSON: ' + err.message); }
+        };
+        reader.readAsText(file);
     }
 
     // Event listeners
     document.getElementById('newBusinessBtn').onclick = addNewBusiness;
     document.getElementById('saveBusinessBtn').onclick = saveBusinessFromUI;
-    document.getElementById('saveToServerBtn').onclick = saveToServer;
+    document.getElementById('exportAllBtn').onclick = exportAll;
     document.getElementById('refreshFromServerBtn').onclick = loadFromServer;
+    document.getElementById('importBtn').onclick = () => document.getElementById('importFileInput').click();
+    document.getElementById('importFileInput').onchange = (e) => {
+        if (e.target.files.length) importFile(e.target.files[0]);
+        e.target.value = '';
+    };
 
     document.getElementById('addCategoryBtn').onclick = () => {
         const catName = document.getElementById('newCatName').value.trim();
@@ -460,7 +518,7 @@
     document.getElementById('displayDBBtn').onclick = () => {
         if (displayModal) displayModal.remove();
         const modal = document.createElement('div'); modal.className = 'modal';
-        modal.innerHTML = `<div class="modal-content"><h2>Database & Index Tables</h2><button id="closeModalBtn">Close</button><hr><h3>Index.json</h3><pre>${escapeHtml(JSON.stringify(index, null, 2))}</pre><h3>Database.json</h3><pre>${escapeHtml(JSON.stringify(db, null, 2))}</pre></div>`;
+        modal.innerHTML = `<div class="modal-content"><h2>Current Data (in memory)</h2><button id="closeModalBtn">Close</button><hr><h3>Index.json</h3><pre>${escapeHtml(JSON.stringify(index, null, 2))}</pre><h3>Database.json</h3><pre>${escapeHtml(JSON.stringify(db, null, 2))}</pre></div>`;
         document.body.appendChild(modal);
         displayModal = modal;
         document.getElementById('closeModalBtn').onclick = () => modal.remove();
