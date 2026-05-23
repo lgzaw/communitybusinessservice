@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database Manager – Multi‑Business CRUD (Server JSON)</title>
+    <title>Database Manager – Full Image/Video Support</title>
     <style>
         * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
         body { background: #0f172a; margin: 0; padding: 20px; color: #e2e8f0; }
@@ -32,7 +32,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>🗄️ Database Manager (Direct JSON File Editing)</h1>
+    <h1>🗄️ Database Manager (Images & Videos as URLs)</h1>
     <div class="toolbar">
         <button id="newBusinessBtn">➕ New Business</button>
         <button id="saveToServerBtn">💾 Save ALL to Server (database.json & index.json)</button>
@@ -52,7 +52,7 @@
                 <div><label>Business Name *</label><input type="text" id="bizName"></div>
                 <div><label>URL Slug (unique) *</label><input type="text" id="bizSlug"></div>
                 <div><label>Business Address</label><input type="text" id="bizAddress"></div>
-                <div><label>Phone (will be formatted)</label><input type="tel" id="bizPhone" placeholder="1234567890 or 1234567"></div>
+                <div><label>Phone (formatted)</label><input type="tel" id="bizPhone" placeholder="1234567890"></div>
                 <div><label>Email *</label><input type="email" id="bizEmail"></div>
                 <div><label>Owner First Name</label><input type="text" id="ownerFirst"></div>
                 <div><label>Owner Last Name</label><input type="text" id="ownerLast"></div>
@@ -90,9 +90,8 @@
                     <input type="text" id="cardProductName" placeholder="Product name">
                     <textarea id="cardDesc" placeholder="Description" rows="2"></textarea>
                     <div><label>Price & Unit</label><input type="text" id="cardPrice" placeholder="$4.99 / each"></div>
-                    <!-- Image and Video dropdowns (now present in HTML) -->
-                    <div><label>Image</label><select id="cardImageSelect"></select></div>
-                    <div><label>Video (YouTube)</label><select id="cardVideoSelect"></select></div>
+                    <select id="cardImageSelect"><option value="">No Image</option></select>
+                    <select id="cardVideoSelect"><option value="">No Video</option></select>
                     <label><input type="checkbox" id="cardDefaultDisplay"> Featured (default display)</label>
                     <button id="addCardBtn">➕ Add Card</button>
                 </div>
@@ -100,15 +99,25 @@
             <div id="cardsList"></div>
         </div>
 
-        <!-- Images & Videos (URL lists) -->
+        <!-- Images (URLs) -->
         <div class="section-card">
             <h2>🖼️ Images (URLs)</h2>
-            <div class="form-row"><input type="text" id="newImageUrl" placeholder="Image URL (external)"><button id="addImageBtn">Add Image URL</button></div>
+            <div class="form-row">
+                <input type="text" id="newImageName" placeholder="Image name (e.g., Sourdough)">
+                <input type="text" id="newImageUrl" placeholder="Image URL (https://...)">
+                <button id="addImageBtn">Add Image</button>
+            </div>
             <div id="imagesList" class="items-grid"></div>
         </div>
+
+        <!-- Videos (YouTube URLs only) -->
         <div class="section-card">
             <h2>🎥 Videos (YouTube URLs only)</h2>
-            <div class="form-row"><input type="text" id="newVideoUrl" placeholder="YouTube URL"><button id="addVideoBtn">Add Video URL</button></div>
+            <div class="form-row">
+                <input type="text" id="newVideoName" placeholder="Video name">
+                <input type="text" id="newVideoUrl" placeholder="YouTube URL">
+                <button id="addVideoBtn">Add Video</button>
+            </div>
             <div id="videosList" class="items-grid"></div>
         </div>
     </div>
@@ -116,9 +125,8 @@
 <div id="statusMsg" class="status">✓ Saved</div>
 
 <script>
-    // ---------- DATABASE STRUCTURE ----------
     let db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
-    let index = []; // { businessId, businessName, slug }
+    let index = [];
     let currentBizId = null;
 
     function generateId(prefix) { return prefix + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8); }
@@ -132,7 +140,6 @@
 
     function validateEmail(email) { return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email); }
     function validateYouTubeUrl(url) { return url.includes('youtube.com/watch?v=') || url.includes('youtu.be/'); }
-    function isValidImageUrl(url) { return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(url) || url.startsWith('http'); }
 
     async function loadFromServer() {
         showLoading(true);
@@ -167,27 +174,17 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            const text = await resp.text(); // read as text first to debug
-            let result;
-            try {
-                result = JSON.parse(text);
-            } catch(e) {
-                console.error('Server returned non-JSON:', text);
-                alert('Server error. Check PHP error logs. Response: ' + text.substring(0, 200));
-                showLoading(false);
-                return;
-            }
+            const result = await resp.json();
             if (result.success) showStatus('Saved to server successfully');
             else alert('Error saving: ' + result.error);
-        } catch(e) { alert('Network error: ' + e.message); }
+        } catch(e) { alert('Network error: ' + e.message + '\nMake sure PHP server is running and save_json.php is accessible.'); }
         showLoading(false);
     }
 
     function showLoading(show) {
         let loader = document.getElementById('globalLoader');
-        if (!loader && show) {
-            loader = document.createElement('div'); loader.id = 'globalLoader'; loader.className = 'loading'; loader.innerText = 'Loading/Saving...'; document.body.appendChild(loader);
-        } else if (loader && !show) loader.remove();
+        if (!loader && show) { loader = document.createElement('div'); loader.id = 'globalLoader'; loader.className = 'loading'; loader.innerText = 'Loading/Saving...'; document.body.appendChild(loader); }
+        else if (loader && !show) loader.remove();
     }
 
     function showStatus(msg) { const el = document.getElementById('statusMsg'); el.textContent = msg; el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 1500); }
@@ -229,20 +226,6 @@
         renderCards();
         renderImages();
         renderVideos();
-        refreshCardSelects(); // populate image/video dropdowns in card form
-    }
-
-    function refreshCardSelects() {
-        const imgSelect = document.getElementById('cardImageSelect');
-        const vidSelect = document.getElementById('cardVideoSelect');
-        if (imgSelect) {
-            const bizImages = db.images.filter(i => i.bizId === currentBizId);
-            imgSelect.innerHTML = '<option value="">No Image</option>' + bizImages.map(img => `<option value="${img.imageId}">${escapeHtml(img.imageName)}</option>`).join('');
-        }
-        if (vidSelect) {
-            const bizVideos = db.videos.filter(v => v.bizId === currentBizId);
-            vidSelect.innerHTML = '<option value="">No Video</option>' + bizVideos.map(vid => `<option value="${vid.videoId}">${escapeHtml(vid.videoName)}</option>`).join('');
-        }
     }
 
     function renderCategories() {
@@ -278,36 +261,38 @@
         const catSelect = document.getElementById('cardCategorySelect');
         const bizCats = db.categories.filter(c => c.bizId === currentBizId);
         catSelect.innerHTML = bizCats.map(cat => `<option value="${cat.categoryId}">${escapeHtml(cat.categoryName)}</option>`).join('');
+        
+        const imgSelect = document.getElementById('cardImageSelect');
+        const bizImages = db.images.filter(i => i.bizId === currentBizId);
+        imgSelect.innerHTML = '<option value="">No Image</option>' + bizImages.map(img => `<option value="${img.imageId}">${escapeHtml(img.imageName)}</option>`).join('');
+        
+        const vidSelect = document.getElementById('cardVideoSelect');
+        const bizVideos = db.videos.filter(v => v.bizId === currentBizId);
+        vidSelect.innerHTML = '<option value="">No Video</option>' + bizVideos.map(vid => `<option value="${vid.videoId}">${escapeHtml(vid.videoName)}</option>`).join('');
 
         bizCards.forEach(card => {
             const cat = db.categories.find(c => c.categoryId === card.categoryId);
+            const img = db.images.find(i => i.imageId === card.imageId);
+            const vid = db.videos.find(v => v.videoId === card.videoId);
             const div = document.createElement('div'); div.className = 'card-item';
-            div.innerHTML = `<strong>${escapeHtml(card.productName)}</strong> (${cat ? cat.categoryName : '?'})<br><small>${escapeHtml(card.description)}</small><br>Price: ${escapeHtml(card.price)} | Featured: ${card.defaultDisplay ? 'Yes' : 'No'}<br>
-                            <button class="editCardBtn" data-id="${card.cardId}">Edit</button> 
+            div.innerHTML = `<strong>${escapeHtml(card.productName)}</strong> (${cat ? cat.categoryName : '?'})<br>
+                            <small>${escapeHtml(card.description)}</small><br>
+                            Price: ${escapeHtml(card.price)} | Featured: ${card.defaultDisplay ? 'Yes' : 'No'}<br>
+                            ${img ? `🖼️ Image: ${escapeHtml(img.imageName)}<br>` : ''}
+                            ${vid ? `🎥 Video: ${escapeHtml(vid.videoName)}<br>` : ''}
+                            <button class="editCardBtn" data-id="${card.cardId}">Edit</button>
                             <button class="deleteCardBtn" data-id="${card.cardId}">Delete</button>`;
             container.appendChild(div);
         });
-        // Edit button: open a simple modal or prompt for each field (including image/video selection)
+        
         document.querySelectorAll('.editCardBtn').forEach(btn => btn.addEventListener('click', () => {
-            const cardId = btn.getAttribute('data-id');
-            const card = db.cards.find(c => c.cardId === cardId);
-            if (!card) return;
-            // Use prompts for simplicity, but for image/video we offer dropdowns via a modal? Instead, we can use a series of prompts.
-            const newName = prompt('Product name', card.productName); if (newName) card.productName = newName;
-            const newDesc = prompt('Description', card.description); if (newDesc !== null) card.description = newDesc;
-            const newPrice = prompt('Price', card.price); if (newPrice !== null) card.price = newPrice;
-            // For image and video, we can show a list of available ones via prompt
-            const bizImages = db.images.filter(i => i.bizId === currentBizId);
-            const imageOptions = bizImages.map(img => `${img.imageId} - ${img.imageName}`).join(', ');
-            const newImageId = prompt(`Image ID (available: ${imageOptions || 'none'})`, card.imageId || '');
-            if (newImageId !== null) card.imageId = newImageId;
-            const bizVideos = db.videos.filter(v => v.bizId === currentBizId);
-            const videoOptions = bizVideos.map(vid => `${vid.videoId} - ${vid.videoName}`).join(', ');
-            const newVideoId = prompt(`Video ID (available: ${videoOptions || 'none'})`, card.videoId || '');
-            if (newVideoId !== null) card.videoId = newVideoId;
-            const newDefault = confirm(`Featured? Current: ${card.defaultDisplay ? 'Yes' : 'No'}`);
-            card.defaultDisplay = newDefault;
-            saveToLocalAndRender();
+            const card = db.cards.find(c => c.cardId === btn.getAttribute('data-id'));
+            if (card) {
+                const newName = prompt('Product name', card.productName); if (newName) card.productName = newName;
+                const newDesc = prompt('Description', card.description); if (newDesc !== null) card.description = newDesc;
+                const newPrice = prompt('Price', card.price); if (newPrice !== null) card.price = newPrice;
+                saveToLocalAndRender();
+            }
         }));
         document.querySelectorAll('.deleteCardBtn').forEach(btn => btn.addEventListener('click', () => {
             if (confirm('Delete this card?')) {
@@ -323,7 +308,7 @@
         container.innerHTML = '';
         bizImages.forEach(img => {
             const div = document.createElement('div'); div.className = 'card-item';
-            div.innerHTML = `<img src="${escapeHtml(img.imageData)}" style="width:100%; height:100px; object-fit:cover;" onerror="this.src='https://via.placeholder.com/300x200?text=Invalid+URL'"><br>
+            div.innerHTML = `<img src="${escapeHtml(img.imageData)}" style="width:100%; height:100px; object-fit:cover;"><br>
                             <strong>${escapeHtml(img.imageName)}</strong><br>
                             <small>ID: ${img.imageId}</small><br>
                             <button class="deleteImageBtn" data-id="${img.imageId}">Delete</button>`;
@@ -331,7 +316,7 @@
         });
         document.querySelectorAll('.deleteImageBtn').forEach(btn => btn.addEventListener('click', () => {
             const imgId = btn.getAttribute('data-id');
-            if (confirm('Delete image? It will be removed from cards.')) {
+            if (confirm('Delete image? It will be removed from all cards.')) {
                 db.images = db.images.filter(i => i.imageId !== imgId);
                 db.cards.forEach(c => { if (c.imageId === imgId) c.imageId = ''; });
                 saveToLocalAndRender();
@@ -344,9 +329,9 @@
         const container = document.getElementById('videosList');
         container.innerHTML = '';
         bizVideos.forEach(vid => {
+            const embedId = extractYouTubeId(vid.videoData);
             const div = document.createElement('div'); div.className = 'card-item';
-            const embedUrl = `https://www.youtube.com/embed/${extractYouTubeId(vid.videoData)}`;
-            div.innerHTML = `<iframe width="100%" height="100" src="${embedUrl}" frameborder="0"></iframe><br>
+            div.innerHTML = `<iframe width="100%" height="100" src="https://www.youtube.com/embed/${embedId}" frameborder="0"></iframe><br>
                             <strong>${escapeHtml(vid.videoName)}</strong><br>
                             <small>ID: ${vid.videoId}</small><br>
                             <button class="deleteVideoBtn" data-id="${vid.videoId}">Delete</button>`;
@@ -354,7 +339,7 @@
         });
         document.querySelectorAll('.deleteVideoBtn').forEach(btn => btn.addEventListener('click', () => {
             const vidId = btn.getAttribute('data-id');
-            if (confirm('Delete video? It will be removed from cards.')) {
+            if (confirm('Delete video? It will be removed from all cards.')) {
                 db.videos = db.videos.filter(v => v.videoId !== vidId);
                 db.cards.forEach(c => { if (c.videoId === vidId) c.videoId = ''; });
                 saveToLocalAndRender();
@@ -429,7 +414,6 @@
         saveToLocalAndRender();
         document.getElementById('newCatName').value = '';
     };
-
     document.getElementById('addCardBtn').onclick = () => {
         const categoryId = document.getElementById('cardCategorySelect').value;
         if (!categoryId) { alert('Select a category'); return; }
@@ -449,34 +433,26 @@
         document.getElementById('cardPrice').value = '';
         document.getElementById('cardDefaultDisplay').checked = false;
     };
-
     document.getElementById('addImageBtn').onclick = () => {
-        let url = document.getElementById('newImageUrl').value.trim();
-        if (!url) return;
-        // Reject base64 data URLs (they are too long and cause JSON issues)
-        if (url.startsWith('data:image')) {
-            alert('Base64 image data is not allowed. Please use an external image URL (e.g., https://...).');
-            return;
-        }
-        if (!isValidImageUrl(url)) {
-            alert('Please enter a valid image URL (http:// or https://)');
-            return;
-        }
+        const name = document.getElementById('newImageName').value.trim();
+        const url = document.getElementById('newImageUrl').value.trim();
+        if (!name || !url) { alert('Both name and URL required'); return; }
         const newId = generateId('img');
-        db.images.push({ imageId: newId, bizId: currentBizId, imageName: url.split('/').pop() || 'image', imageData: url });
+        db.images.push({ imageId: newId, bizId: currentBizId, imageName: name, imageData: url });
         saveToLocalAndRender();
+        document.getElementById('newImageName').value = '';
         document.getElementById('newImageUrl').value = '';
-        refreshCardSelects();
     };
-
     document.getElementById('addVideoBtn').onclick = () => {
+        const name = document.getElementById('newVideoName').value.trim();
         let url = document.getElementById('newVideoUrl').value.trim();
+        if (!name || !url) { alert('Both name and URL required'); return; }
         if (!validateYouTubeUrl(url)) { alert('Only YouTube URLs allowed'); return; }
         const newId = generateId('vid');
-        db.videos.push({ videoId: newId, bizId: currentBizId, videoName: url.split('v=')[1] || 'video', videoData: url });
+        db.videos.push({ videoId: newId, bizId: currentBizId, videoName: name, videoData: url });
         saveToLocalAndRender();
+        document.getElementById('newVideoName').value = '';
         document.getElementById('newVideoUrl').value = '';
-        refreshCardSelects();
     };
 
     // Display Database Tables
