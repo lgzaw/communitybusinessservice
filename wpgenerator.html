@@ -7,34 +7,44 @@
     <style>
         * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', sans-serif; }
         body { margin: 0; min-height: 100vh; background-size: cover; background-attachment: fixed; }
-        .site-header { background-size: cover; background-position: center; padding: 1rem 2rem; }
-        .header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; backdrop-filter: brightness(0.9); padding: 0.5rem 1rem; border-radius: 40px; }
-        .business-name { font-size: 1.8rem; font-weight: bold; }
-        .login-btn, .logout-btn, .refresh-btn { background: #0f172a; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: bold; margin-left: 8px; }
-        .nav-bar { background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 0.5rem 1rem; display: flex; gap: 1rem; overflow-x: auto; white-space: nowrap; border-bottom: 2px solid #facc15; }
+        .site-header { background-size: cover; background-position: center; padding: 0.5rem 1rem; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; backdrop-filter: brightness(0.9); padding: 0.5rem 1rem; border-radius: 40px; }
+        .business-name { font-size: 1.4rem; font-weight: bold; }
+        .login-btn, .logout-btn { background: #0f172a; color: white; border: none; padding: 6px 12px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        .nav-bar { background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 0.5rem 1rem; display: flex; gap: 1rem; overflow-x: auto; white-space: nowrap; border-bottom: 2px solid #facc15; z-index: 20; position: relative; }
         .dropdown { position: relative; display: inline-block; }
         .dropbtn { background: none; border: none; color: white; font-weight: 600; font-size: 1rem; padding: 0.5rem 0.8rem; cursor: pointer; }
-        .dropdown-content { display: none; position: absolute; background: white; min-width: 200px; max-height: 300px; overflow-y: auto; z-index: 1; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+        .dropdown-content { display: none; position: absolute; background: white; min-width: 200px; max-height: 300px; overflow-y: auto; z-index: 100; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
         .dropdown-content a { color: black; padding: 8px 12px; text-decoration: none; display: block; cursor: pointer; }
         .dropdown-content a:hover { background: #f1f5f9; }
         .dropdown:hover .dropdown-content { display: block; }
-        .main-container { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
-        .featured-section { margin-bottom: 2rem; }
-        .featured-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; color: #1e293b; }
+        .main-container { max-width: 1200px; margin: 1rem auto; padding: 0 1rem; }
+        .featured-section { margin-bottom: 1.5rem; }
+        .featured-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 0.8rem; color: #1e293b; }
         .featured-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; overflow-x: auto; }
-        .featured-card { background: white; border-radius: 20px; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; min-width: 200px; }
-        .featured-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 12px; }
-        .detail-area { background: white; border-radius: 28px; padding: 1.5rem; margin-top: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
-        .dashboard-panel { background: rgba(255,255,255,0.95); border-radius: 28px; padding: 1.5rem; margin-top: 2rem; display: none; }
+        .featured-card { background: white; border-radius: 16px; padding: 0.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; text-align: center; }
+        .featured-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 12px; }
+        .detail-area { background: white; border-radius: 28px; padding: 1.5rem; margin-top: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.1); text-align: center; }
+        .detail-area img, .detail-area iframe { max-width: 100%; max-height: 400px; border-radius: 20px; margin: 0 auto; display: block; }
+        .dashboard-panel { background: rgba(255,255,255,0.95); border-radius: 28px; padding: 1rem; margin-top: 1.5rem; display: none; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
         input, textarea, select { width: 100%; padding: 8px 12px; border-radius: 20px; border: 1px solid #cbd5e1; }
         button { background: #facc15; border: none; padding: 8px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; }
-        footer { background: #1e293b; color: #cbd5e1; text-align: center; padding: 1.5rem; margin-top: 2rem; }
+        footer { background: #1e293b; color: #cbd5e1; text-align: center; padding: 1rem; margin-top: 2rem; font-size: 0.8rem; }
         .loading { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; z-index: 2000; flex-direction: column; }
         .error-banner, .info-banner { background: #ef4444; color: white; padding: 0.5rem; text-align: center; border-radius: 20px; margin-bottom: 1rem; }
-        .info-banner { background: #3b82f6; }
-        .last-update { font-size: 0.8rem; color: #94a3b8; margin-left: 1rem; }
-        @media (max-width: 900px) { .featured-grid { grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); } .form-row { grid-template-columns: 1fr; } }
+        .upload-area { margin-bottom: 1rem; border: 1px solid #facc15; border-radius: 20px; padding: 1rem; }
+        @media (max-width: 900px) {
+            .featured-grid { grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); }
+            .form-row { grid-template-columns: 1fr; }
+            .business-name { font-size: 1.2rem; }
+            .header-content { flex-direction: column; align-items: stretch; }
+            .login-btn, .logout-btn { align-self: flex-end; }
+        }
+        @media (max-width: 600px) {
+            .featured-card img { height: 100px; }
+            .detail-area img, .detail-area iframe { max-height: 250px; }
+        }
     </style>
 </head>
 <body>
@@ -42,7 +52,6 @@
     <div class="header-content">
         <div class="business-name" id="businessName">Loading...</div>
         <div>
-            <button id="refreshDataBtn" class="refresh-btn">🔄 Refresh Data</button>
             <button id="loginShowBtn" class="login-btn">Owner Login</button>
             <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
         </div>
@@ -57,7 +66,7 @@
     <div id="dashboardPanel" class="dashboard-panel"><h2>📊 Owner Dashboard</h2><div id="dashboardInner"></div></div>
 </div>
 <footer id="siteFooter"></footer>
-<div id="loginModal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:1000;"><div style="background:white; padding:2rem; border-radius:32px; width:300px;"><h3>Owner Login</h3><input type="text" id="loginUsername" placeholder="Username"><br><input type="password" id="loginPassword" placeholder="Password"><br><button id="loginSubmitBtn">Login</button><button id="loginCloseBtn">Cancel</button></div></div>
+<div id="loginModal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:1000;"><div style="background:white; padding:1.5rem; border-radius:32px; width:280px;"><h3>Owner Login</h3><input type="text" id="loginUsername" placeholder="Username" style="width:100%; margin-bottom:12px;"><br><input type="password" id="loginPassword" placeholder="Password" style="width:100%; margin-bottom:12px;"><br><button id="loginSubmitBtn">Login</button><button id="loginCloseBtn">Cancel</button></div></div>
 
 <script>
     let db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
@@ -66,21 +75,47 @@
     let randomInterval = null;
     let lastLoadTime = null;
 
+    const CLOUD_NAME = "dpsc029n6";
+    let UPLOAD_PRESET = localStorage.getItem('cloudinary_upload_preset') || 'default_preset';
+
+    async function uploadToCloudinary(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', UPLOAD_PRESET);
+        try {
+            const resp = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
+            const data = await resp.json();
+            if (data.secure_url) return { publicId: data.public_id, url: data.secure_url };
+            else { alert('Upload failed: ' + (data.error?.message || 'Unknown')); return null; }
+        } catch(err) { alert('Network error'); return null; }
+    }
+
+    async function sendEmailWithAttachment(businessName, jsonData) {
+        try {
+            const response = await fetch('send_email.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to: 'info@communitybusinessservices.ca', subject: `Business Update: ${businessName}`, data: jsonData })
+            });
+            const result = await response.json();
+            return result.success;
+        } catch(e) {
+            console.error('Email send failed', e);
+            return false;
+        }
+    }
+
     async function loadFromServer(showLoadingIndicator = true) {
         if (showLoadingIndicator) showLoading(true);
         try {
-            const resp = await fetch('database.json?t=' + Date.now(), {
-                cache: 'no-store',
-                headers: { 'Cache-Control': 'no-cache' }
-            });
+            const resp = await fetch('database.json?t=' + Date.now(), { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } });
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             db = await resp.json();
             lastLoadTime = new Date();
             document.getElementById('dataStatus').style.display = 'none';
-            console.log('Database loaded successfully', db);
         } catch(e) {
             console.error(e);
-            document.getElementById('dataStatus').innerHTML = '⚠️ Failed to load database.json from server. Make sure you are running a PHP server (e.g., `php -S localhost:8000`) and the file exists.';
+            document.getElementById('dataStatus').innerHTML = '⚠️ Failed to load database.json. Make sure the file exists.';
             document.getElementById('dataStatus').style.display = 'block';
             db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
         }
@@ -92,14 +127,8 @@
 
         const params = new URLSearchParams(window.location.search);
         const slug = params.get('urlslug');
-        if (slug) {
-            currentBusiness = db.businesses.find(b => b.slug === slug && b.validCheck === true);
-            console.log(`Looking for slug "${slug}", found:`, currentBusiness);
-        }
-        if (!currentBusiness && db.businesses.length) {
-            currentBusiness = db.businesses.find(b => b.validCheck === true) || db.businesses[0];
-            console.log('No slug match, using first active business:', currentBusiness);
-        }
+        if (slug) currentBusiness = db.businesses.find(b => b.slug === slug && b.validCheck === true);
+        if (!currentBusiness && db.businesses.length) currentBusiness = db.businesses.find(b => b.validCheck === true) || db.businesses[0];
         if (currentBusiness) {
             renderPublicView();
             const savedLogin = localStorage.getItem('loggedInBizId');
@@ -120,21 +149,6 @@
             document.getElementById('logoutBtn').style.display = 'none';
         }
         if (showLoadingIndicator) showLoading(false);
-        updateRefreshTimestamp();
-    }
-
-    function updateRefreshTimestamp() {
-        if (lastLoadTime) {
-            const msg = `📅 Last loaded: ${lastLoadTime.toLocaleTimeString()}`;
-            let existing = document.querySelector('.last-update');
-            if (existing) existing.innerText = msg;
-            else {
-                const span = document.createElement('span');
-                span.className = 'last-update';
-                span.innerText = msg;
-                document.querySelector('.header-content').appendChild(span);
-            }
-        }
     }
 
     function showLoading(show) {
@@ -189,7 +203,7 @@
             grid.appendChild(div);
         });
         for (let i = items.length; i < 4; i++) {
-            const empty = document.createElement('div'); empty.className = 'featured-card'; empty.style.opacity = '0.5'; empty.innerHTML = '<div style="height:140px; background:#e2e8f0; border-radius:12px;"></div><p> </p>'; grid.appendChild(empty);
+            const empty = document.createElement('div'); empty.className = 'featured-card'; empty.style.opacity = '0.5'; empty.innerHTML = '<div style="height:120px; background:#e2e8f0; border-radius:12px;"></div><p> </p>'; grid.appendChild(empty);
         }
     }
 
@@ -217,18 +231,21 @@
             grid.appendChild(div);
         });
         for (let i = selected.length; i < 4; i++) {
-            const empty = document.createElement('div'); empty.className = 'featured-card'; empty.style.opacity = '0.5'; empty.innerHTML = '<div style="height:140px; background:#e2e8f0; border-radius:12px;"></div><p> </p>'; grid.appendChild(empty);
+            const empty = document.createElement('div'); empty.className = 'featured-card'; empty.style.opacity = '0.5'; empty.innerHTML = '<div style="height:120px; background:#e2e8f0; border-radius:12px;"></div><p> </p>'; grid.appendChild(empty);
         }
     }
 
     function showItemDetail(card) {
+        stopRandomFeatured();
         const img = db.images.find(i => i.imageId === card.imageId && i.bizId === currentBusiness.bizId);
         const vid = db.videos.find(v => v.videoId === card.videoId && v.bizId === currentBusiness.bizId);
         let media = '';
-        if (vid && vid.videoData) media = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${extractYouTubeId(vid.videoData)}" frameborder="0" allowfullscreen></iframe>`;
-        else if (img && img.imageData) media = `<img src="${img.imageData}" style="max-width:100%; border-radius:20px;">`;
+        if (vid && vid.videoData) media = `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${extractYouTubeId(vid.videoData)}" frameborder="0" allowfullscreen></iframe>`;
+        else if (img && img.imageData) media = `<img src="${img.imageData}" style="max-width:100%; max-height:400px; border-radius:20px;">`;
         document.getElementById('detailTitle').innerHTML = card.productName;
         document.getElementById('detailContent').innerHTML = `${media}<p><strong>Description:</strong> ${escapeHtml(card.description)}</p><p><strong>Price:</strong> ${escapeHtml(card.price)}</p><button onclick="alert('Order feature coming soon')">Order Now</button>`;
+        // Smooth scroll to detail area
+        document.getElementById('detailArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function renderFooter() {
@@ -239,18 +256,24 @@
                            ${currentBusiness.qrImage ? `<img src="${escapeHtml(currentBusiness.qrImage)}" alt="QR" style="max-width:100px;">` : ''}`;
     }
 
-    // Owner Dashboard (simplified)
     function renderDashboard() {
         if (!loggedInOwner) return;
         const panel = document.getElementById('dashboardPanel');
         panel.style.display = 'block';
         const inner = document.getElementById('dashboardInner');
         inner.innerHTML = `
-            <div style="display:flex; gap:1rem; margin-bottom:1rem;">
+            <div style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
                 <button id="saveChangesToTemp">💾 Save Changes to temporary.json & Email Master</button>
                 <button id="loadTempBtn">📂 Load from temporary.json</button>
                 <input type="file" id="tempFileInput" accept=".json" style="display:none">
                 <button id="refreshDataDashboardBtn">🔄 Reload Data from Server</button>
+            </div>
+            <div class="upload-area">
+                <h3>📸 Upload Image to Cloudinary</h3>
+                <input type="file" id="imageUploadInput" accept="image/*" capture="environment">
+                <input type="text" id="imageNameInput" placeholder="Image name">
+                <button id="uploadImageBtn">Upload & Add to Images</button>
+                <div id="uploadResult"></div>
             </div>
             <div class="form-row"><div><label>Business Name</label><input id="dashBizName" value="${escapeHtml(loggedInOwner.bizName)}"></div>
             <div><label>Slug (not editable)</label><input id="dashSlug" value="${escapeHtml(loggedInOwner.slug)}" disabled></div>
@@ -272,7 +295,22 @@
         renderDashboardCategories();
         renderDashboardCards();
 
-        document.getElementById('saveChangesToTemp').onclick = () => {
+        document.getElementById('uploadImageBtn').onclick = async () => {
+            const fileInput = document.getElementById('imageUploadInput');
+            const nameInput = document.getElementById('imageNameInput');
+            if (!fileInput.files.length || !nameInput.value.trim()) { alert('Select an image and enter a name.'); return; }
+            const result = await uploadToCloudinary(fileInput.files[0]);
+            if (result) {
+                const newId = generateId('img');
+                db.images.push({ imageId: newId, bizId: currentBusiness.bizId, imageName: nameInput.value.trim(), cloudinaryPublicId: result.publicId, imageData: result.url });
+                saveDBandRefresh();
+                fileInput.value = ''; nameInput.value = '';
+                document.getElementById('uploadResult').innerHTML = `<span style="color:green;">✅ Image uploaded.</span>`;
+                setTimeout(() => document.getElementById('uploadResult').innerHTML = '', 3000);
+            }
+        };
+
+        document.getElementById('saveChangesToTemp').onclick = async () => {
             const updatedBiz = { ...loggedInOwner,
                 bizName: document.getElementById('dashBizName').value,
                 phone: formatPhone(document.getElementById('dashPhone').value),
@@ -290,12 +328,15 @@
                 qrImage: document.getElementById('dashQrImg').value
             };
             const tempData = { business: updatedBiz, categories: db.categories.filter(c => c.bizId === currentBusiness.bizId), cards: db.cards.filter(c => c.bizId === currentBusiness.bizId), images: db.images.filter(i => i.bizId === currentBusiness.bizId), videos: db.videos.filter(v => v.bizId === currentBusiness.bizId) };
-            const blob = new Blob([JSON.stringify(tempData, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = 'temporary.json'; a.click(); URL.revokeObjectURL(url);
-            const mailto = `mailto:master@communitybusinessservices.ca?subject=Business%20Update%20Request%20(${loggedInOwner.bizName})&body=Please%20review%20the%20attached%20temporary.json%20file%20for%20approval.`;
-            window.open(mailto, '_blank');
-            alert('temporary.json downloaded. An email draft has been opened for the website master.');
+            const success = await sendEmailWithAttachment(updatedBiz.bizName, tempData);
+            if (success) alert('Update request sent to website master.');
+            else {
+                // Fallback: download file
+                const blob = new Blob([JSON.stringify(tempData, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'temporary.json'; a.click(); URL.revokeObjectURL(url);
+                alert('Email sending failed. temporary.json downloaded. Please forward it manually.');
+            }
         };
 
         const loadBtn = document.getElementById('loadTempBtn');
@@ -310,7 +351,7 @@
                     const loaded = JSON.parse(ev.target.result);
                     if (loaded.business && loaded.categories && loaded.cards && loaded.images && loaded.videos) {
                         if (loaded.business.bizId !== currentBusiness.bizId) {
-                            if (!confirm('Loaded business ID differs. Continue? Will overwrite current categories/cards.')) return;
+                            if (!confirm('Loaded business ID differs. Continue? Will overwrite current data.')) return;
                         }
                         db.categories = db.categories.filter(c => c.bizId !== currentBusiness.bizId).concat(loaded.categories);
                         db.cards = db.cards.filter(c => c.bizId !== currentBusiness.bizId).concat(loaded.cards);
@@ -323,9 +364,8 @@
                             currentBusiness = updatedBiz;
                             loggedInOwner = updatedBiz;
                         }
-                        renderDashboard();
-                        renderPublicView();
-                        alert('temporary.json loaded. Changes are in memory only. Use "Save to Server" in Database Manager to persist.');
+                        saveDBandRefresh();
+                        alert('temporary.json loaded. Changes are in memory only.');
                     } else { alert('Invalid temporary.json structure'); }
                 } catch(err) { alert('Error parsing JSON'); }
                 fileInput.value = '';
@@ -356,20 +396,21 @@
         document.querySelectorAll('.dashCatName').forEach(inp => inp.onchange = () => {
             const cat = db.categories.find(c => c.categoryId === inp.getAttribute('data-id'));
             if (cat) cat.categoryName = inp.value;
+            saveDBandRefresh();
         });
         document.querySelectorAll('.dashDelCat').forEach(btn => btn.onclick = () => {
             const catId = btn.getAttribute('data-id');
             if (confirm('Delete category and all its cards?')) {
                 db.categories = db.categories.filter(c => c.categoryId !== catId);
                 db.cards = db.cards.filter(c => c.categoryId !== catId);
-                renderDashboard();
+                saveDBandRefresh();
             }
         });
         document.getElementById('addCatDashBtn').onclick = () => {
             const name = document.getElementById('newCatNameDash').value.trim();
             if (name) {
                 db.categories.push({ categoryId: generateId('cat'), bizId: currentBusiness.bizId, categoryName: name });
-                renderDashboard();
+                saveDBandRefresh();
             }
         };
     }
@@ -378,7 +419,14 @@
         const container = document.getElementById('dashCardList');
         const bizCards = db.cards.filter(c => c.bizId === currentBusiness.bizId);
         const cats = db.categories.filter(c => c.bizId === currentBusiness.bizId);
-        container.innerHTML = `<div><select id="newCardCat">${cats.map(c=>`<option value="${c.categoryId}">${c.categoryName}</option>`).join('')}</select><input id="newCardName" placeholder="Name"><input id="newCardPrice" placeholder="Price"><button id="addCardDashBtn">Add Card</button></div>`;
+        const bizImages = db.images.filter(i => i.bizId === currentBusiness.bizId);
+        container.innerHTML = `<div><select id="newCardCat">${cats.map(c=>`<option value="${c.categoryId}">${c.categoryName}</option>`).join('')}</select>
+                               <input id="newCardName" placeholder="Name">
+                               <input id="newCardPrice" placeholder="Price">
+                               <select id="newCardImageSelect"><option value="">No Image</option>${bizImages.map(img=>`<option value="${img.imageId}">${img.imageName}</option>`).join('')}</select>
+                               <select id="newCardVideoSelect"><option value="">No Video</option>${db.videos.filter(v=>v.bizId===currentBusiness.bizId).map(v=>`<option value="${v.videoId}">${v.videoName}</option>`).join('')}</select>
+                               <label><input type="checkbox" id="newCardDefault"> Featured</label>
+                               <button id="addCardDashBtn">Add Card</button></div>`;
         bizCards.forEach(card => {
             const div = document.createElement('div');
             div.innerHTML = `<strong>${escapeHtml(card.productName)}</strong> (${cats.find(c=>c.categoryId===card.categoryId)?.categoryName}) - ${escapeHtml(card.price)} <button class="dashEditCard" data-id="${card.cardId}">Edit</button> <button class="dashDelCard" data-id="${card.cardId}">Delete</button>`;
@@ -390,40 +438,43 @@
                 const newName = prompt('Product name', card.productName); if (newName) card.productName = newName;
                 const newDesc = prompt('Description', card.description); if (newDesc !== null) card.description = newDesc;
                 const newPrice = prompt('Price', card.price); if (newPrice !== null) card.price = newPrice;
-                renderDashboard();
+                saveDBandRefresh();
             }
         });
         document.querySelectorAll('.dashDelCard').forEach(btn => btn.onclick = () => {
             if (confirm('Delete this card?')) {
                 db.cards = db.cards.filter(c => c.cardId !== btn.getAttribute('data-id'));
-                renderDashboard();
+                saveDBandRefresh();
             }
         });
         document.getElementById('addCardDashBtn').onclick = () => {
             const catId = document.getElementById('newCardCat').value;
             const name = document.getElementById('newCardName').value.trim();
             if (!name) return;
-            db.cards.push({ cardId: generateId('card'), bizId: currentBusiness.bizId, categoryId: catId, productName: name, description: '', price: document.getElementById('newCardPrice').value, imageId: '', videoId: '', defaultDisplay: false });
-            renderDashboard();
+            db.cards.push({ cardId: generateId('card'), bizId: currentBusiness.bizId, categoryId: catId, productName: name, description: '', price: document.getElementById('newCardPrice').value, imageId: document.getElementById('newCardImageSelect').value, videoId: document.getElementById('newCardVideoSelect').value, defaultDisplay: document.getElementById('newCardDefault').checked });
+            saveDBandRefresh();
+            document.getElementById('newCardName').value = '';
+            document.getElementById('newCardPrice').value = '';
+            document.getElementById('newCardDefault').checked = false;
         };
     }
 
-    // LOGIN FIX: clear previous errors, check currentBusiness, and log
-    function showLoginModal() {
-        document.getElementById('loginError').style.display = 'none';
-        document.getElementById('loginModal').style.display = 'flex';
+    function saveDBandRefresh() {
+        localStorage.setItem('multiBusinessDB', JSON.stringify(db));
+        currentBusiness = db.businesses.find(b => b.bizId === currentBusiness.bizId);
+        if (loggedInOwner) loggedInOwner = currentBusiness;
+        renderPublicView();
+        if (loggedInOwner) renderDashboard();
+        else document.getElementById('dashboardPanel').style.display = 'none';
     }
+
+    function showLoginModal() { document.getElementById('loginError').style.display = 'none'; document.getElementById('loginModal').style.display = 'flex'; }
     function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
     function attemptLogin() {
         const user = document.getElementById('loginUsername').value.trim();
         const pwd = document.getElementById('loginPassword').value.trim();
         const errorDiv = document.getElementById('loginError');
-        if (!currentBusiness) {
-            errorDiv.innerText = 'No active business found. Please ensure the URL contains ?urlslug=yourbusiness and the business is active.';
-            errorDiv.style.display = 'block';
-            return;
-        }
-        console.log('Attempt login for business:', currentBusiness.bizName, 'Username in DB:', currentBusiness.username, 'Password in DB:', currentBusiness.password);
+        if (!currentBusiness) { errorDiv.innerText = 'No active business found.'; errorDiv.style.display = 'block'; return; }
         if (currentBusiness.username === user && currentBusiness.password === pwd && currentBusiness.validCheck === true) {
             loggedInOwner = currentBusiness;
             localStorage.setItem('loggedInBizId', currentBusiness.bizId);
@@ -433,7 +484,7 @@
             document.getElementById('logoutBtn').style.display = 'inline-block';
             errorDiv.style.display = 'none';
         } else {
-            errorDiv.innerText = `Invalid credentials or business not active. Username from DB: "${currentBusiness.username}", entered: "${user}". Password from DB: "${currentBusiness.password}", entered: "${pwd}".`;
+            errorDiv.innerText = `Invalid credentials for ${currentBusiness.bizName}. Expected username: "${currentBusiness.username}"`;
             errorDiv.style.display = 'block';
         }
     }
@@ -452,7 +503,6 @@
     function extractYouTubeId(url) { const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/); return match ? match[1] : ''; }
     function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
 
-    document.getElementById('refreshDataBtn')?.addEventListener('click', () => loadFromServer(true));
     document.getElementById('loginShowBtn')?.addEventListener('click', showLoginModal);
     document.getElementById('logoutBtn')?.addEventListener('click', logout);
     document.getElementById('loginSubmitBtn')?.addEventListener('click', attemptLogin);
