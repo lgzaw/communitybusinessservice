@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database Manager – Multi‑Business (GitHub Pages compatible)</title>
+    <title>Database Manager – Cloudinary Images</title>
     <style>
         * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
         body { background: #0f172a; margin: 0; padding: 20px; color: #e2e8f0; }
@@ -12,11 +12,12 @@
         .toolbar { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; background: #1e293b; padding: 1rem; border-radius: 24px; }
         button { background: #facc15; color: #0f172a; border: none; padding: 8px 20px; border-radius: 40px; font-weight: bold; cursor: pointer; margin-right: 8px; }
         button.danger { background: #ef4444; color: white; }
-        button.secondary { background: #334155; color: white; }
         .business-selector { background: #1e293b; border-radius: 24px; padding: 1rem; margin-bottom: 1rem; }
-        .business-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
-        .business-tag { background: #facc15; color: #0f172a; padding: 6px 12px; border-radius: 30px; cursor: pointer; font-weight: bold; }
-        .business-tag.active { background: #3b82f6; color: white; }
+        .search-select { width: 100%; position: relative; }
+        .search-select input { width: 100%; padding: 10px; border-radius: 30px; border: none; background: #0f172a; color: white; }
+        .search-select ul { list-style: none; margin: 0; padding: 0; background: #0f172a; border-radius: 20px; max-height: 200px; overflow-y: auto; position: absolute; width: 100%; z-index: 10; display: none; }
+        .search-select li { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #334155; }
+        .search-select li:hover, .search-select li.active { background: #facc15; color: #0f172a; }
         .edit-area { background: #1e293b; border-radius: 24px; padding: 1rem; margin-top: 1rem; }
         .form-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
         label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 0.85rem; }
@@ -28,27 +29,43 @@
         .modal { position: fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000; }
         .modal-content { background:#1e293b; padding:2rem; border-radius:32px; max-width:90%; max-height:80%; overflow:auto; }
         .loading { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; z-index: 2000; }
-        .import-zone { margin-top: 10px; padding: 8px; background: #0f172a; border-radius: 20px; }
+        .cloudinary-config { background: #1e293b; border-radius: 20px; padding: 1rem; margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; }
+        .cloudinary-config label { min-width: 120px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>🗄️ Database Manager (Static – Export/Import JSON)</h1>
+    <h1>🗄️ Database Manager</h1>
+    
+    <div class="cloudinary-config">
+        <div style="flex:2">
+            <label>Cloudinary Cloud Name</label>
+            <input type="text" id="cloudName" value="dpsc029n6" readonly disabled style="background:#334155;">
+        </div>
+        <div style="flex:3">
+            <label>Unsigned Upload Preset</label>
+            <input type="text" id="uploadPreset" placeholder="e.g., my_unsigned_preset">
+        </div>
+        <div>
+            <button id="saveCloudinaryConfig">💾 Save Preset</button>
+        </div>
+        <div style="flex:2">
+            <small>⚠️ Create an unsigned upload preset in your Cloudinary dashboard (Settings → Upload) and enter its name here.</small>
+        </div>
+    </div>
+
     <div class="toolbar">
         <button id="newBusinessBtn">➕ New Business</button>
         <button id="exportAllBtn">💾 Export database.json & index.json</button>
-        <button id="importBtn">📂 Import JSON file (overwrite)</button>
-        <input type="file" id="importFileInput" accept=".json" style="display:none">
-        <button id="refreshFromServerBtn">🔄 Reload from GitHub (raw)</button>
         <button id="displayDBBtn">📋 Display Current Data</button>
-    </div>
-    <div class="import-zone">
-        <small>⚠️ No PHP – to save changes permanently, export the JSON files and commit them to your GitHub repository manually.</small>
     </div>
 
     <div class="business-selector">
         <strong>📌 Select Business to Edit</strong>
-        <div id="businessList" class="business-list"></div>
+        <div class="search-select" id="businessSearchSelect">
+            <input type="text" id="searchBusinessInput" placeholder="Type to search business...">
+            <ul id="businessDropdown"></ul>
+        </div>
     </div>
 
     <div id="businessEditor" style="display:none;">
@@ -77,7 +94,6 @@
             <button id="saveBusinessBtn">💾 Save Business Info (local memory)</button>
         </div>
 
-        <!-- Categories -->
         <div class="section-card">
             <h2>📂 Categories</h2>
             <div class="form-row">
@@ -87,7 +103,6 @@
             <div id="categoriesList"></div>
         </div>
 
-        <!-- Cards (Items) -->
         <div class="section-card">
             <h2>📦 Products / Cards</h2>
             <div id="cardForm">
@@ -105,18 +120,20 @@
             <div id="cardsList"></div>
         </div>
 
-        <!-- Images (URLs) -->
         <div class="section-card">
-            <h2>🖼️ Images (URLs)</h2>
+            <h2>🖼️ Images (Cloudinary + External URLs)</h2>
             <div class="form-row">
                 <input type="text" id="newImageName" placeholder="Image name">
-                <input type="text" id="newImageUrl" placeholder="Image URL (https://...)">
-                <button id="addImageBtn">Add Image</button>
+                <input type="file" id="imageFileUpload" accept="image/*">
+                <button id="uploadImageToCloudinaryBtn">📤 Upload to Cloudinary & Add</button>
+            </div>
+            <div class="form-row">
+                <input type="text" id="externalImageUrl" placeholder="Or paste external URL (https://...)">
+                <button id="addExternalImageBtn">➕ Add External URL</button>
             </div>
             <div id="imagesList" class="items-grid"></div>
         </div>
 
-        <!-- Videos (YouTube URLs only) -->
         <div class="section-card">
             <h2>🎥 Videos (YouTube URLs only)</h2>
             <div class="form-row">
@@ -134,75 +151,106 @@
     let db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
     let index = [];
     let currentBizId = null;
+    let cloudName = "dpsc029n6";
+    let uploadPreset = localStorage.getItem('cloudinary_upload_preset') || '';
 
-    function generateId(prefix) { return prefix + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8); }
+    document.getElementById('uploadPreset').value = uploadPreset;
+    document.getElementById('saveCloudinaryConfig').onclick = () => {
+        const preset = document.getElementById('uploadPreset').value.trim();
+        if (preset) {
+            localStorage.setItem('cloudinary_upload_preset', preset);
+            uploadPreset = preset;
+            showStatus('Upload preset saved.');
+        } else alert('Enter a valid unsigned upload preset name.');
+    };
 
-    function formatPhone(input) {
-        let digits = input.replace(/\D/g, '');
-        if (digits.length === 10) return digits.slice(0,3) + ' ' + digits.slice(3,6) + ' ' + digits.slice(6);
-        if (digits.length === 7) return digits.slice(0,3) + ' ' + digits.slice(3);
-        return input;
+    async function uploadToCloudinary(file) {
+        if (!uploadPreset) { alert('Configure upload preset first.'); return null; }
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', uploadPreset);
+        try {
+            const resp = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: formData });
+            const data = await resp.json();
+            if (data.secure_url) return { publicId: data.public_id, url: data.secure_url };
+            else { alert('Upload failed: ' + (data.error?.message || 'Unknown')); return null; }
+        } catch(err) { alert('Network error'); return null; }
     }
 
+    document.getElementById('uploadImageToCloudinaryBtn').onclick = async () => {
+        const fileInput = document.getElementById('imageFileUpload');
+        const nameInput = document.getElementById('newImageName');
+        if (!fileInput.files.length || !nameInput.value.trim()) { alert('Select an image and enter a name.'); return; }
+        const result = await uploadToCloudinary(fileInput.files[0]);
+        if (result) {
+            db.images.push({ imageId: generateId('img'), bizId: currentBizId, imageName: nameInput.value.trim(), cloudinaryPublicId: result.publicId, imageData: result.url });
+            saveToLocalAndRender();
+            fileInput.value = ''; nameInput.value = '';
+            showStatus('Image uploaded and added.');
+        }
+    };
+    document.getElementById('addExternalImageBtn').onclick = () => {
+        const url = document.getElementById('externalImageUrl').value.trim();
+        const name = document.getElementById('newImageName').value.trim();
+        if (!name || !url) { alert('Both name and URL required.'); return; }
+        db.images.push({ imageId: generateId('img'), bizId: currentBizId, imageName: name, cloudinaryPublicId: '', imageData: url });
+        saveToLocalAndRender();
+        document.getElementById('externalImageUrl').value = ''; document.getElementById('newImageName').value = '';
+        showStatus('External image added.');
+    };
+
+    function generateId(prefix) { return prefix + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8); }
+    function formatPhone(input) { let d = input.replace(/\D/g,''); if(d.length===10) return d.slice(0,3)+' '+d.slice(3,6)+' '+d.slice(6); if(d.length===7) return d.slice(0,3)+' '+d.slice(3); return input; }
     function validateEmail(email) { return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email); }
     function validateYouTubeUrl(url) { return url.includes('youtube.com/watch?v=') || url.includes('youtu.be/'); }
 
     async function loadFromServer() {
         showLoading(true);
         try {
-            // Use relative paths – they will fetch from the same directory as this HTML file
-            // On GitHub Pages, this works because the JSON files are in the same repo.
             const indexResp = await fetch('index.json?t=' + Date.now(), { cache: 'no-store' });
-            if (indexResp.ok) index = await indexResp.json();
-            else index = [];
-
+            index = indexResp.ok ? await indexResp.json() : [];
             const dbResp = await fetch('database.json?t=' + Date.now(), { cache: 'no-store' });
-            if (dbResp.ok) db = await dbResp.json();
-            else db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
-        } catch(e) { 
-            console.error(e); 
-            index = []; 
-            db = { businesses: [], categories: [], cards: [], images: [], videos: [] };
-            alert('Failed to load JSON files. Make sure database.json and index.json exist in the same folder as this HTML file.');
-        }
+            db = dbResp.ok ? await dbResp.json() : { businesses: [], categories: [], cards: [], images: [], videos: [] };
+        } catch(e) { console.error(e); index = []; db = { businesses: [], categories: [], cards: [], images: [], videos: [] }; alert('Failed to load JSON files.'); }
         if (!db.businesses) db.businesses = [];
         if (!db.categories) db.categories = [];
         if (!db.cards) db.cards = [];
         if (!db.images) db.images = [];
         if (!db.videos) db.videos = [];
-        renderBusinessList();
+        renderBusinessDropdown();
         if (currentBizId && db.businesses.find(b => b.bizId === currentBizId)) renderBusinessEditor();
         else if (db.businesses.length) { currentBizId = db.businesses[0].bizId; renderBusinessEditor(); }
         else document.getElementById('businessEditor').style.display = 'none';
         showLoading(false);
-        showStatus('Loaded from GitHub (static files)');
+        showStatus('Loaded from GitHub');
     }
 
-    function showLoading(show) {
-        let loader = document.getElementById('globalLoader');
-        if (!loader && show) { loader = document.createElement('div'); loader.id = 'globalLoader'; loader.className = 'loading'; loader.innerText = 'Loading...'; document.body.appendChild(loader); }
-        else if (loader && !show) loader.remove();
-    }
+    function showLoading(show) { let loader = document.getElementById('globalLoader'); if (!loader && show) { loader = document.createElement('div'); loader.id = 'globalLoader'; loader.className = 'loading'; loader.innerText = 'Loading...'; document.body.appendChild(loader); } else if (loader && !show) loader.remove(); }
+    function showStatus(msg) { const el = document.getElementById('statusMsg'); el.textContent = msg; el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 1500); }
 
-    function showStatus(msg) { 
-        const el = document.getElementById('statusMsg'); 
-        el.textContent = msg; 
-        el.style.opacity = '1'; 
-        setTimeout(() => el.style.opacity = '0', 1500); 
-    }
-
-    function renderBusinessList() {
-        const container = document.getElementById('businessList');
-        container.innerHTML = '';
-        index.forEach(biz => {
-            const tag = document.createElement('div');
-            tag.className = 'business-tag' + (currentBizId === biz.businessId ? ' active' : '');
-            tag.textContent = biz.businessName;
-            tag.onclick = () => { currentBizId = biz.businessId; renderBusinessList(); renderBusinessEditor(); };
-            container.appendChild(tag);
+    function renderBusinessDropdown() {
+        const input = document.getElementById('searchBusinessInput');
+        const dropdown = document.getElementById('businessDropdown');
+        const searchTerm = input.value.toLowerCase();
+        const filtered = index.filter(b => b.businessName.toLowerCase().includes(searchTerm));
+        dropdown.innerHTML = '';
+        filtered.forEach(biz => {
+            const li = document.createElement('li');
+            li.textContent = biz.businessName;
+            li.onclick = () => {
+                currentBizId = biz.businessId;
+                input.value = biz.businessName;
+                dropdown.style.display = 'none';
+                renderBusinessEditor();
+            };
+            if (currentBizId === biz.businessId) li.classList.add('active');
+            dropdown.appendChild(li);
         });
-        if (index.length === 0) container.innerHTML = '<i>No businesses. Click "New Business".</i>';
+        dropdown.style.display = filtered.length ? 'block' : 'none';
     }
+
+    document.getElementById('searchBusinessInput').addEventListener('input', renderBusinessDropdown);
+    document.addEventListener('click', (e) => { if (!e.target.closest('.search-select')) document.getElementById('businessDropdown').style.display = 'none'; });
 
     function renderBusinessEditor() {
         const biz = db.businesses.find(b => b.bizId === currentBizId);
@@ -224,10 +272,7 @@
         document.getElementById('bodyBg').value = biz.bodyBgImage || '';
         document.getElementById('mapImage').value = biz.mapImage || '';
         document.getElementById('qrImage').value = biz.qrImage || '';
-        renderCategories();
-        renderCards();
-        renderImages();
-        renderVideos();
+        renderCategories(); renderCards(); renderImages(); renderVideos();
     }
 
     function renderCategories() {
@@ -241,13 +286,12 @@
             container.appendChild(div);
         });
         document.querySelectorAll('.catNameInput').forEach(inp => inp.addEventListener('change', () => {
-            const catId = inp.getAttribute('data-id'); const newName = inp.value.trim();
-            const cat = db.categories.find(c => c.categoryId === catId);
-            if (cat && newName) cat.categoryName = newName;
+            const cat = db.categories.find(c => c.categoryId === inp.dataset.id);
+            if (cat && inp.value.trim()) cat.categoryName = inp.value.trim();
             saveToLocalAndRender();
         }));
         document.querySelectorAll('.deleteCatBtn').forEach(btn => btn.addEventListener('click', () => {
-            const catId = btn.getAttribute('data-id');
+            const catId = btn.dataset.id;
             if (confirm('Delete category and all its cards?')) {
                 db.categories = db.categories.filter(c => c.categoryId !== catId);
                 db.cards = db.cards.filter(c => c.categoryId !== catId);
@@ -263,32 +307,22 @@
         const catSelect = document.getElementById('cardCategorySelect');
         const bizCats = db.categories.filter(c => c.bizId === currentBizId);
         catSelect.innerHTML = bizCats.map(cat => `<option value="${cat.categoryId}">${escapeHtml(cat.categoryName)}</option>`).join('');
-        
         const imgSelect = document.getElementById('cardImageSelect');
         const bizImages = db.images.filter(i => i.bizId === currentBizId);
         imgSelect.innerHTML = '<option value="">No Image</option>' + bizImages.map(img => `<option value="${img.imageId}">${escapeHtml(img.imageName)}</option>`).join('');
-        
         const vidSelect = document.getElementById('cardVideoSelect');
         const bizVideos = db.videos.filter(v => v.bizId === currentBizId);
         vidSelect.innerHTML = '<option value="">No Video</option>' + bizVideos.map(vid => `<option value="${vid.videoId}">${escapeHtml(vid.videoName)}</option>`).join('');
-
         bizCards.forEach(card => {
             const cat = db.categories.find(c => c.categoryId === card.categoryId);
             const img = db.images.find(i => i.imageId === card.imageId);
             const vid = db.videos.find(v => v.videoId === card.videoId);
             const div = document.createElement('div'); div.className = 'card-item';
-            div.innerHTML = `<strong>${escapeHtml(card.productName)}</strong> (${cat ? cat.categoryName : '?'})<br>
-                            <small>${escapeHtml(card.description)}</small><br>
-                            Price: ${escapeHtml(card.price)} | Featured: ${card.defaultDisplay ? 'Yes' : 'No'}<br>
-                            ${img ? `🖼️ Image: ${escapeHtml(img.imageName)}<br>` : ''}
-                            ${vid ? `🎥 Video: ${escapeHtml(vid.videoName)}<br>` : ''}
-                            <button class="editCardBtn" data-id="${card.cardId}">Edit</button>
-                            <button class="deleteCardBtn" data-id="${card.cardId}">Delete</button>`;
+            div.innerHTML = `<strong>${escapeHtml(card.productName)}</strong> (${cat ? cat.categoryName : '?'})<br><small>${escapeHtml(card.description)}</small><br>Price: ${escapeHtml(card.price)} | Featured: ${card.defaultDisplay ? 'Yes' : 'No'}<br>${img ? `🖼️ Image: ${escapeHtml(img.imageName)}<br>` : ''}${vid ? `🎥 Video: ${escapeHtml(vid.videoName)}<br>` : ''}<button class="editCardBtn" data-id="${card.cardId}">Edit</button> <button class="deleteCardBtn" data-id="${card.cardId}">Delete</button>`;
             container.appendChild(div);
         });
-        
         document.querySelectorAll('.editCardBtn').forEach(btn => btn.addEventListener('click', () => {
-            const card = db.cards.find(c => c.cardId === btn.getAttribute('data-id'));
+            const card = db.cards.find(c => c.cardId === btn.dataset.id);
             if (card) {
                 const newName = prompt('Product name', card.productName); if (newName) card.productName = newName;
                 const newDesc = prompt('Description', card.description); if (newDesc !== null) card.description = newDesc;
@@ -298,7 +332,7 @@
         }));
         document.querySelectorAll('.deleteCardBtn').forEach(btn => btn.addEventListener('click', () => {
             if (confirm('Delete this card?')) {
-                db.cards = db.cards.filter(c => c.cardId !== btn.getAttribute('data-id'));
+                db.cards = db.cards.filter(c => c.cardId !== btn.dataset.id);
                 saveToLocalAndRender();
             }
         }));
@@ -310,14 +344,11 @@
         container.innerHTML = '';
         bizImages.forEach(img => {
             const div = document.createElement('div'); div.className = 'card-item';
-            div.innerHTML = `<img src="${escapeHtml(img.imageData)}" style="width:100%; height:100px; object-fit:cover;"><br>
-                            <strong>${escapeHtml(img.imageName)}</strong><br>
-                            <small>ID: ${img.imageId}</small><br>
-                            <button class="deleteImageBtn" data-id="${img.imageId}">Delete</button>`;
+            div.innerHTML = `<img src="${escapeHtml(img.imageData)}" style="width:100%; height:100px; object-fit:cover;"><br><strong>${escapeHtml(img.imageName)}</strong><br>${img.cloudinaryPublicId ? `<small>Cloudinary ID: ${img.cloudinaryPublicId}</small><br>` : ''}<small>ID: ${img.imageId}</small><br><button class="deleteImageBtn" data-id="${img.imageId}">Delete</button>`;
             container.appendChild(div);
         });
         document.querySelectorAll('.deleteImageBtn').forEach(btn => btn.addEventListener('click', () => {
-            const imgId = btn.getAttribute('data-id');
+            const imgId = btn.dataset.id;
             if (confirm('Delete image? It will be removed from all cards.')) {
                 db.images = db.images.filter(i => i.imageId !== imgId);
                 db.cards.forEach(c => { if (c.imageId === imgId) c.imageId = ''; });
@@ -333,14 +364,11 @@
         bizVideos.forEach(vid => {
             const embedId = extractYouTubeId(vid.videoData);
             const div = document.createElement('div'); div.className = 'card-item';
-            div.innerHTML = `<iframe width="100%" height="100" src="https://www.youtube.com/embed/${embedId}" frameborder="0"></iframe><br>
-                            <strong>${escapeHtml(vid.videoName)}</strong><br>
-                            <small>ID: ${vid.videoId}</small><br>
-                            <button class="deleteVideoBtn" data-id="${vid.videoId}">Delete</button>`;
+            div.innerHTML = `<iframe width="100%" height="100" src="https://www.youtube.com/embed/${embedId}" frameborder="0"></iframe><br><strong>${escapeHtml(vid.videoName)}</strong><br><small>ID: ${vid.videoId}</small><br><button class="deleteVideoBtn" data-id="${vid.videoId}">Delete</button>`;
             container.appendChild(div);
         });
         document.querySelectorAll('.deleteVideoBtn').forEach(btn => btn.addEventListener('click', () => {
-            const vidId = btn.getAttribute('data-id');
+            const vidId = btn.dataset.id;
             if (confirm('Delete video? It will be removed from all cards.')) {
                 db.videos = db.videos.filter(v => v.videoId !== vidId);
                 db.cards.forEach(c => { if (c.videoId === vidId) c.videoId = ''; });
@@ -349,19 +377,12 @@
         }));
     }
 
-    function extractYouTubeId(url) {
-        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
-        return match ? match[1] : '';
-    }
-
+    function extractYouTubeId(url) { const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/); return match ? match[1] : ''; }
     function saveBusinessFromUI() {
         const biz = db.businesses.find(b => b.bizId === currentBizId);
         if (!biz) return;
         const newSlug = document.getElementById('bizSlug').value.trim();
-        if (newSlug && index.some(i => i.slug === newSlug && i.businessId !== currentBizId)) {
-            alert('Slug already used by another business');
-            return;
-        }
+        if (newSlug && index.some(i => i.slug === newSlug && i.businessId !== currentBizId)) { alert('Slug already used'); return; }
         let phoneVal = formatPhone(document.getElementById('bizPhone').value);
         const emailVal = document.getElementById('bizEmail').value.trim();
         if (emailVal && !validateEmail(emailVal)) { alert('Invalid email'); return; }
@@ -383,147 +404,61 @@
         biz.qrImage = document.getElementById('qrImage').value;
         saveToLocalAndRender();
     }
-
     function addNewBusiness() {
         const newId = generateId('biz');
-        db.businesses.push({
-            bizId: newId, bizName: "New Business", slug: "new" + Date.now(), address: "", phone: "", email: "",
-            ownerFirst: "", ownerLast: "", ownerPhone: "", username: "", password: "", paymentMethod: "",
-            validCheck: true, headerBgImage: "", bodyBgImage: "", mapImage: "", qrImage: ""
-        });
+        db.businesses.push({ bizId: newId, bizName: "New Business", slug: "new" + Date.now(), address: "", phone: "", email: "", ownerFirst: "", ownerLast: "", ownerPhone: "", username: "", password: "", paymentMethod: "", validCheck: true, headerBgImage: "", bodyBgImage: "", mapImage: "", qrImage: "" });
         saveToLocalAndRender();
         currentBizId = newId;
-        renderBusinessList();
+        renderBusinessDropdown();
         renderBusinessEditor();
     }
-
     function saveToLocalAndRender() {
-        // Update index from db.businesses
         index = db.businesses.map(b => ({ businessId: b.bizId, businessName: b.bizName, slug: b.slug }));
-        renderBusinessList();
+        renderBusinessDropdown();
         renderBusinessEditor();
         showStatus('Changes saved to memory (export to persist)');
     }
-
-    // Export both JSON files
     function exportAll() {
         const dbBlob = new Blob([JSON.stringify(db, null, 2)], {type: 'application/json'});
         const idxBlob = new Blob([JSON.stringify(index, null, 2)], {type: 'application/json'});
-        const dbUrl = URL.createObjectURL(dbBlob);
-        const idxUrl = URL.createObjectURL(idxBlob);
+        const dbUrl = URL.createObjectURL(dbBlob); const idxUrl = URL.createObjectURL(idxBlob);
         const aDb = document.createElement('a'); aDb.href = dbUrl; aDb.download = 'database.json'; aDb.click();
         const aIdx = document.createElement('a'); aIdx.href = idxUrl; aIdx.download = 'index.json'; aIdx.click();
-        URL.revokeObjectURL(dbUrl);
-        URL.revokeObjectURL(idxUrl);
+        URL.revokeObjectURL(dbUrl); URL.revokeObjectURL(idxUrl);
         showStatus('Exported database.json and index.json');
     }
 
-    // Import a JSON file (overwrites both db and index if it's a full export)
-    function importFile(file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const imported = JSON.parse(e.target.result);
-                // Check if it's a combined export (has both database and index) or just one of them
-                if (imported.database && imported.index) {
-                    db = imported.database;
-                    index = imported.index;
-                } else if (imported.businesses && imported.categories && imported.cards) {
-                    // It's a raw database.json
-                    db = imported;
-                    index = db.businesses.map(b => ({ businessId: b.bizId, businessName: b.bizName, slug: b.slug }));
-                } else if (Array.isArray(imported) && imported[0] && imported[0].businessId) {
-                    // It's an index.json
-                    index = imported;
-                    // keep db unchanged
-                } else {
-                    alert('Unrecognized JSON format. Please import a full export (database.json + index.json combined) or a single database.json.');
-                    return;
-                }
-                // Ensure arrays exist
-                if (!db.businesses) db.businesses = [];
-                if (!db.categories) db.categories = [];
-                if (!db.cards) db.cards = [];
-                if (!db.images) db.images = [];
-                if (!db.videos) db.videos = [];
-                currentBizId = db.businesses.length ? db.businesses[0].bizId : null;
-                saveToLocalAndRender();
-                showStatus('Imported successfully. Changes are in memory – export to save to disk.');
-            } catch(err) { alert('Error parsing JSON: ' + err.message); }
-        };
-        reader.readAsText(file);
-    }
-
-    // Event listeners
     document.getElementById('newBusinessBtn').onclick = addNewBusiness;
     document.getElementById('saveBusinessBtn').onclick = saveBusinessFromUI;
     document.getElementById('exportAllBtn').onclick = exportAll;
-    document.getElementById('refreshFromServerBtn').onclick = loadFromServer;
-    document.getElementById('importBtn').onclick = () => document.getElementById('importFileInput').click();
-    document.getElementById('importFileInput').onchange = (e) => {
-        if (e.target.files.length) importFile(e.target.files[0]);
-        e.target.value = '';
-    };
-
-    document.getElementById('addCategoryBtn').onclick = () => {
-        const catName = document.getElementById('newCatName').value.trim();
-        if (!catName) return;
-        db.categories.push({ categoryId: generateId('cat'), bizId: currentBizId, categoryName: catName });
-        saveToLocalAndRender();
-        document.getElementById('newCatName').value = '';
-    };
+    document.getElementById('addCategoryBtn').onclick = () => { const catName = document.getElementById('newCatName').value.trim(); if (!catName) return; db.categories.push({ categoryId: generateId('cat'), bizId: currentBizId, categoryName: catName }); saveToLocalAndRender(); document.getElementById('newCatName').value = ''; };
     document.getElementById('addCardBtn').onclick = () => {
         const categoryId = document.getElementById('cardCategorySelect').value;
         if (!categoryId) { alert('Select a category'); return; }
         const productName = document.getElementById('cardProductName').value.trim();
         if (!productName) return;
-        db.cards.push({
-            cardId: generateId('card'), bizId: currentBizId, categoryId: categoryId,
-            productName: productName, description: document.getElementById('cardDesc').value,
-            price: document.getElementById('cardPrice').value,
-            imageId: document.getElementById('cardImageSelect').value,
-            videoId: document.getElementById('cardVideoSelect').value,
-            defaultDisplay: document.getElementById('cardDefaultDisplay').checked
-        });
+        db.cards.push({ cardId: generateId('card'), bizId: currentBizId, categoryId: categoryId, productName: productName, description: document.getElementById('cardDesc').value, price: document.getElementById('cardPrice').value, imageId: document.getElementById('cardImageSelect').value, videoId: document.getElementById('cardVideoSelect').value, defaultDisplay: document.getElementById('cardDefaultDisplay').checked });
         saveToLocalAndRender();
-        document.getElementById('cardProductName').value = '';
-        document.getElementById('cardDesc').value = '';
-        document.getElementById('cardPrice').value = '';
-        document.getElementById('cardDefaultDisplay').checked = false;
-    };
-    document.getElementById('addImageBtn').onclick = () => {
-        const name = document.getElementById('newImageName').value.trim();
-        const url = document.getElementById('newImageUrl').value.trim();
-        if (!name || !url) { alert('Both name and URL required'); return; }
-        const newId = generateId('img');
-        db.images.push({ imageId: newId, bizId: currentBizId, imageName: name, imageData: url });
-        saveToLocalAndRender();
-        document.getElementById('newImageName').value = '';
-        document.getElementById('newImageUrl').value = '';
+        document.getElementById('cardProductName').value = ''; document.getElementById('cardDesc').value = ''; document.getElementById('cardPrice').value = ''; document.getElementById('cardDefaultDisplay').checked = false;
     };
     document.getElementById('addVideoBtn').onclick = () => {
         const name = document.getElementById('newVideoName').value.trim();
         let url = document.getElementById('newVideoUrl').value.trim();
         if (!name || !url) { alert('Both name and URL required'); return; }
         if (!validateYouTubeUrl(url)) { alert('Only YouTube URLs allowed'); return; }
-        const newId = generateId('vid');
-        db.videos.push({ videoId: newId, bizId: currentBizId, videoName: name, videoData: url });
+        db.videos.push({ videoId: generateId('vid'), bizId: currentBizId, videoName: name, videoData: url });
         saveToLocalAndRender();
-        document.getElementById('newVideoName').value = '';
-        document.getElementById('newVideoUrl').value = '';
+        document.getElementById('newVideoName').value = ''; document.getElementById('newVideoUrl').value = '';
     };
 
-    // Display Database Tables
     let displayModal = null;
     document.getElementById('displayDBBtn').onclick = () => {
         if (displayModal) displayModal.remove();
         const modal = document.createElement('div'); modal.className = 'modal';
-        modal.innerHTML = `<div class="modal-content"><h2>Current Data (in memory)</h2><button id="closeModalBtn">Close</button><hr><h3>Index.json</h3><pre>${escapeHtml(JSON.stringify(index, null, 2))}</pre><h3>Database.json</h3><pre>${escapeHtml(JSON.stringify(db, null, 2))}</pre></div>`;
-        document.body.appendChild(modal);
-        displayModal = modal;
+        modal.innerHTML = `<div class="modal-content"><h2>Current Data</h2><button id="closeModalBtn">Close</button><hr><h3>Index.json</h3><pre>${escapeHtml(JSON.stringify(index, null, 2))}</pre><h3>Database.json</h3><pre>${escapeHtml(JSON.stringify(db, null, 2))}</pre></div>`;
+        document.body.appendChild(modal); displayModal = modal;
         document.getElementById('closeModalBtn').onclick = () => modal.remove();
     };
-
     function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
     loadFromServer();
 </script>
