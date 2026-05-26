@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database Manager – Cloudinary Images</title>
+    <title>Database Manager – Cloudflare Worker</title>
     <style>
         * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
         body { background: #0f172a; margin: 0; padding: 20px; color: #e2e8f0; }
@@ -29,14 +29,28 @@
         .modal { position: fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000; }
         .modal-content { background:#1e293b; padding:2rem; border-radius:32px; max-width:90%; max-height:80%; overflow:auto; }
         .loading { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; z-index: 2000; }
-        .cloudinary-config { background: #1e293b; border-radius: 20px; padding: 1rem; margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; }
-        .cloudinary-config label { min-width: 120px; }
+        .api-url-config, .cloudinary-config { background: #1e293b; border-radius: 20px; padding: 1rem; margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; }
+        .api-url-config label, .cloudinary-config label { min-width: 120px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>🗄️ Database Manager</h1>
+    <h1>🗄️ Database Manager (Cloudflare Worker)</h1>
     
+    <!-- API URL Configuration -->
+    <div class="api-url-config">
+        <div style="flex:2">
+            <label>🌐 Cloudflare Worker URL:</label>
+            <input type="text" id="apiUrl" placeholder="https://your-worker-name.workers.dev/">
+        </div>
+        <div>
+            <button id="saveApiUrl">Save URL</button>
+        </div>
+        <div style="flex:2">
+            <small>Enter the full URL of your Cloudflare Worker (ends with `/`).</small>
+        </div>
+    </div>
+
     <div class="cloudinary-config">
         <div style="flex:2">
             <label>Cloudinary Cloud Name</label>
@@ -56,8 +70,12 @@
 
     <div class="toolbar">
         <button id="newBusinessBtn">➕ New Business</button>
-        <button id="exportAllBtn">💾 Export database.json & index.json</button>
+        <button id="refreshFromCloudBtn">🔄 Refresh from Cloudflare</button>
+        <button id="saveToCloudBtn">💾 Save to Cloudflare</button>
         <button id="displayDBBtn">📋 Display Current Data</button>
+        <button id="exportBackupBtn">💾 Export Backup (JSON)</button>
+        <input type="file" id="importBackupInput" accept=".json" style="display:none">
+        <button id="importBackupBtn">📂 Import Backup</button>
     </div>
 
     <div class="business-selector">
@@ -69,6 +87,7 @@
     </div>
 
     <div id="businessEditor" style="display:none;">
+        <!-- Same editor content as before – all fields unchanged -->
         <div class="edit-area">
             <h2>🏢 Business & Owner Info</h2>
             <div class="form-row">
@@ -153,7 +172,20 @@
     let currentBizId = null;
     let cloudName = "dpsc029n6";
     let uploadPreset = localStorage.getItem('cloudinary_upload_preset') || '';
+    let apiUrl = localStorage.getItem('cloudflare_api_url') || '';
 
+    // --- UI binding for API URL ---
+    document.getElementById('apiUrl').value = apiUrl;
+    document.getElementById('saveApiUrl').onclick = () => {
+        const url = document.getElementById('apiUrl').value.trim();
+        if (url) {
+            localStorage.setItem('cloudflare_api_url', url);
+            apiUrl = url;
+            showStatus('API URL saved. Click "Refresh from Cloudflare" to load data.');
+        } else alert('Enter a valid URL');
+    };
+
+    // --- Cloudinary preset ---
     document.getElementById('uploadPreset').value = uploadPreset;
     document.getElementById('saveCloudinaryConfig').onclick = () => {
         const preset = document.getElementById('uploadPreset').value.trim();
@@ -199,35 +231,96 @@
         showStatus('External image added.');
     };
 
+    // --- Helper functions ---
     function generateId(prefix) { return prefix + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8); }
     function formatPhone(input) { let d = input.replace(/\D/g,''); if(d.length===10) return d.slice(0,3)+' '+d.slice(3,6)+' '+d.slice(6); if(d.length===7) return d.slice(0,3)+' '+d.slice(3); return input; }
     function validateEmail(email) { return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email); }
     function validateYouTubeUrl(url) { return url.includes('youtube.com/watch?v=') || url.includes('youtu.be/'); }
-
-    async function loadFromServer() {
-        showLoading(true);
-        try {
-            const indexResp = await fetch('index.json?t=' + Date.now(), { cache: 'no-store' });
-            index = indexResp.ok ? await indexResp.json() : [];
-            const dbResp = await fetch('database.json?t=' + Date.now(), { cache: 'no-store' });
-            db = dbResp.ok ? await dbResp.json() : { businesses: [], categories: [], cards: [], images: [], videos: [] };
-        } catch(e) { console.error(e); index = []; db = { businesses: [], categories: [], cards: [], images: [], videos: [] }; alert('Failed to load JSON files.'); }
-        if (!db.businesses) db.businesses = [];
-        if (!db.categories) db.categories = [];
-        if (!db.cards) db.cards = [];
-        if (!db.images) db.images = [];
-        if (!db.videos) db.videos = [];
-        renderBusinessDropdown();
-        if (currentBizId && db.businesses.find(b => b.bizId === currentBizId)) renderBusinessEditor();
-        else if (db.businesses.length) { currentBizId = db.businesses[0].bizId; renderBusinessEditor(); }
-        else document.getElementById('businessEditor').style.display = 'none';
-        showLoading(false);
-        showStatus('Loaded from GitHub');
-    }
-
+    function extractYouTubeId(url) { const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/); return match ? match[1] : ''; }
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
     function showLoading(show) { let loader = document.getElementById('globalLoader'); if (!loader && show) { loader = document.createElement('div'); loader.id = 'globalLoader'; loader.className = 'loading'; loader.innerText = 'Loading...'; document.body.appendChild(loader); } else if (loader && !show) loader.remove(); }
     function showStatus(msg) { const el = document.getElementById('statusMsg'); el.textContent = msg; el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 1500); }
 
+    // --- Cloudflare API calls ---
+    async function loadFromCloudflare() {
+        if (!apiUrl) { alert('Please set the Cloudflare Worker URL first.'); return; }
+        showLoading(true);
+        try {
+            const resp = await fetch(apiUrl);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+            db = data.database || { businesses: [], categories: [], cards: [], images: [], videos: [] };
+            index = data.index || [];
+            if (!db.businesses) db.businesses = [];
+            if (!db.categories) db.categories = [];
+            if (!db.cards) db.cards = [];
+            if (!db.images) db.images = [];
+            if (!db.videos) db.videos = [];
+            renderBusinessDropdown();
+            if (currentBizId && db.businesses.find(b => b.bizId === currentBizId)) renderBusinessEditor();
+            else if (db.businesses.length) { currentBizId = db.businesses[0].bizId; renderBusinessEditor(); }
+            else document.getElementById('businessEditor').style.display = 'none';
+            showStatus('Loaded from Cloudflare');
+        } catch(e) {
+            console.error(e);
+            alert('Failed to load from Cloudflare: ' + e.message);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function saveToCloudflare() {
+        if (!apiUrl) { alert('Please set the Cloudflare Worker URL first.'); return; }
+        showLoading(true);
+        try {
+            const payload = { database: db, index: index };
+            const resp = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const result = await resp.json();
+            if (result.success) showStatus('Saved to Cloudflare successfully');
+            else throw new Error(result.error || 'Unknown error');
+        } catch(e) {
+            alert('Error saving to Cloudflare: ' + e.message);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // --- Backup export / import ---
+    function exportBackup() {
+        const backup = { database: db, index: index };
+        const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'cloudflare_backup.json'; a.click(); URL.revokeObjectURL(url);
+        showStatus('Backup exported');
+    }
+    function importBackup(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const backup = JSON.parse(e.target.result);
+                if (backup.database && backup.index) {
+                    db = backup.database;
+                    index = backup.index;
+                    if (!db.businesses) db.businesses = [];
+                    if (!db.categories) db.categories = [];
+                    if (!db.cards) db.cards = [];
+                    if (!db.images) db.images = [];
+                    if (!db.videos) db.videos = [];
+                    currentBizId = db.businesses.length ? db.businesses[0].bizId : null;
+                    saveToLocalAndRender();
+                    showStatus('Backup loaded into memory. Click "Save to Cloudflare" to store it.');
+                } else alert('Invalid backup file (missing database/index)');
+            } catch(err) { alert('Error parsing JSON: ' + err.message); }
+        };
+        reader.readAsText(file);
+    }
+
+    // --- Business list & editor (same as before) ---
     function renderBusinessDropdown() {
         const input = document.getElementById('searchBusinessInput');
         const dropdown = document.getElementById('businessDropdown');
@@ -248,7 +341,6 @@
         });
         dropdown.style.display = filtered.length ? 'block' : 'none';
     }
-
     document.getElementById('searchBusinessInput').addEventListener('input', renderBusinessDropdown);
     document.addEventListener('click', (e) => { if (!e.target.closest('.search-select')) document.getElementById('businessDropdown').style.display = 'none'; });
 
@@ -275,7 +367,7 @@
         renderCategories(); renderCards(); renderImages(); renderVideos();
     }
 
-    function renderCategories() {
+    function renderCategories() { /* unchanged – same as your original */ 
         const bizCats = db.categories.filter(c => c.bizId === currentBizId);
         const container = document.getElementById('categoriesList');
         container.innerHTML = '';
@@ -300,7 +392,7 @@
         }));
     }
 
-    function renderCards() {
+    function renderCards() { /* same as your original – kept for brevity, but the full code works */ 
         const bizCards = db.cards.filter(c => c.bizId === currentBizId);
         const container = document.getElementById('cardsList');
         container.innerHTML = '';
@@ -338,7 +430,7 @@
         }));
     }
 
-    function renderImages() {
+    function renderImages() { /* same as original */ 
         const bizImages = db.images.filter(i => i.bizId === currentBizId);
         const container = document.getElementById('imagesList');
         container.innerHTML = '';
@@ -357,7 +449,7 @@
         }));
     }
 
-    function renderVideos() {
+    function renderVideos() { /* same as original */ 
         const bizVideos = db.videos.filter(v => v.bizId === currentBizId);
         const container = document.getElementById('videosList');
         container.innerHTML = '';
@@ -377,7 +469,6 @@
         }));
     }
 
-    function extractYouTubeId(url) { const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/); return match ? match[1] : ''; }
     function saveBusinessFromUI() {
         const biz = db.businesses.find(b => b.bizId === currentBizId);
         if (!biz) return;
@@ -416,21 +507,17 @@
         index = db.businesses.map(b => ({ businessId: b.bizId, businessName: b.bizName, slug: b.slug }));
         renderBusinessDropdown();
         renderBusinessEditor();
-        showStatus('Changes saved to memory (export to persist)');
-    }
-    function exportAll() {
-        const dbBlob = new Blob([JSON.stringify(db, null, 2)], {type: 'application/json'});
-        const idxBlob = new Blob([JSON.stringify(index, null, 2)], {type: 'application/json'});
-        const dbUrl = URL.createObjectURL(dbBlob); const idxUrl = URL.createObjectURL(idxBlob);
-        const aDb = document.createElement('a'); aDb.href = dbUrl; aDb.download = 'database.json'; aDb.click();
-        const aIdx = document.createElement('a'); aIdx.href = idxUrl; aIdx.download = 'index.json'; aIdx.click();
-        URL.revokeObjectURL(dbUrl); URL.revokeObjectURL(idxUrl);
-        showStatus('Exported database.json and index.json');
+        showStatus('Changes saved to memory – click "Save to Cloudflare" to persist');
     }
 
+    // --- Event listeners for buttons ---
     document.getElementById('newBusinessBtn').onclick = addNewBusiness;
     document.getElementById('saveBusinessBtn').onclick = saveBusinessFromUI;
-    document.getElementById('exportAllBtn').onclick = exportAll;
+    document.getElementById('refreshFromCloudBtn').onclick = loadFromCloudflare;
+    document.getElementById('saveToCloudBtn').onclick = saveToCloudflare;
+    document.getElementById('exportBackupBtn').onclick = exportBackup;
+    document.getElementById('importBackupBtn').onclick = () => document.getElementById('importBackupInput').click();
+    document.getElementById('importBackupInput').onchange = (e) => { if (e.target.files.length) importBackup(e.target.files[0]); e.target.value = ''; };
     document.getElementById('addCategoryBtn').onclick = () => { const catName = document.getElementById('newCatName').value.trim(); if (!catName) return; db.categories.push({ categoryId: generateId('cat'), bizId: currentBizId, categoryName: catName }); saveToLocalAndRender(); document.getElementById('newCatName').value = ''; };
     document.getElementById('addCardBtn').onclick = () => {
         const categoryId = document.getElementById('cardCategorySelect').value;
@@ -455,12 +542,14 @@
     document.getElementById('displayDBBtn').onclick = () => {
         if (displayModal) displayModal.remove();
         const modal = document.createElement('div'); modal.className = 'modal';
-        modal.innerHTML = `<div class="modal-content"><h2>Current Data</h2><button id="closeModalBtn">Close</button><hr><h3>Index.json</h3><pre>${escapeHtml(JSON.stringify(index, null, 2))}</pre><h3>Database.json</h3><pre>${escapeHtml(JSON.stringify(db, null, 2))}</pre></div>`;
+        modal.innerHTML = `<div class="modal-content"><h2>Current Data (in memory)</h2><button id="closeModalBtn">Close</button><hr><h3>Index</h3><pre>${escapeHtml(JSON.stringify(index, null, 2))}</pre><h3>Database</h3><pre>${escapeHtml(JSON.stringify(db, null, 2))}</pre></div>`;
         document.body.appendChild(modal); displayModal = modal;
         document.getElementById('closeModalBtn').onclick = () => modal.remove();
     };
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
-    loadFromServer();
+
+    // Initial load (if API URL exists, load from Cloudflare)
+    if (apiUrl) loadFromCloudflare();
+    else alert('Please enter your Cloudflare Worker URL in the top field and click "Save URL", then click "Refresh from Cloudflare".');
 </script>
 </body>
 </html>
